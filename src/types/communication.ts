@@ -9,6 +9,11 @@ export interface Contact {
   tags: string[];
   lastActivity: string;
   avatar?: string;
+  company?: string;
+  status?: string;
+  score?: number;
+  source?: string;
+  location?: string;
 }
 
 export interface Message {
