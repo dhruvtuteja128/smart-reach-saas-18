@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Mail, MessageCircle, Phone, Ad } from "lucide-react";
+import { Mail, MessageCircle, Phone, BarChart3 } from "lucide-react";
 import { useCampaign, CampaignType as CampaignTypeEnum } from "@/components/campaigns/CampaignContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -42,7 +42,7 @@ export const CampaignType = () => {
       id: "ads" as CampaignTypeEnum,
       name: "Ad Campaign",
       description: "Create Google and Meta Ads campaigns",
-      icon: <Ad className="h-10 w-10" />,
+      icon: <BarChart3 className="h-10 w-10" />,
     },
   ];
 

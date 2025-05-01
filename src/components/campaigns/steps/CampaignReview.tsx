@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Mail, MessageCircle, Phone, Ad, Calendar, Clock, Users, Check, AlertTriangle } from "lucide-react";
+import { Mail, MessageCircle, Phone, BarChart3, Calendar, Clock, Users, Check, AlertTriangle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +30,7 @@ export const CampaignReview = () => {
       case "whatsapp":
         return <Phone className="h-5 w-5" />;
       case "ads":
-        return <Ad className="h-5 w-5" />;
+        return <BarChart3 className="h-5 w-5" />;
       default:
         return null;
     }
