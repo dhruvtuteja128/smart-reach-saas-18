@@ -15,6 +15,7 @@ import Assistant from "./pages/Assistant";
 import Integrations from "./pages/Integrations";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import AICampaign from "./pages/AICampaign";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/communication" element={<Communication />} />
           <Route path="/campaigns" element={<Campaigns />} />
+          <Route path="/ai-campaign" element={<AICampaign />} />
           <Route path="/crm" element={<CRM />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/workflows" element={<Workflows />} />
