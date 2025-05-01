@@ -34,7 +34,7 @@ const recentActivities = [
     description: "Submitted contact form on pricing page",
     timestamp: "10m ago",
     icon: <Users className="h-4 w-4 text-primary" />,
-    type: "system"
+    type: "system" as const
   },
   {
     id: "2",
@@ -42,7 +42,7 @@ const recentActivities = [
     description: "32% open rate, 12% click-through",
     timestamp: "1h ago",
     icon: <Mail className="h-4 w-4 text-primary" />,
-    type: "email"
+    type: "email" as const
   },
   {
     id: "3",
@@ -50,7 +50,7 @@ const recentActivities = [
     description: "⭐⭐⭐⭐⭐ Great experience with the sales team!",
     timestamp: "3h ago",
     icon: <Star className="h-4 w-4 text-primary" />,
-    type: "review"
+    type: "review" as const
   },
   {
     id: "4",
@@ -58,7 +58,7 @@ const recentActivities = [
     description: "198 recipients, 2 replies",
     timestamp: "5h ago",
     icon: <MessageCircle className="h-4 w-4 text-primary" />,
-    type: "sms"
+    type: "sms" as const
   },
   {
     id: "5",
@@ -66,7 +66,7 @@ const recentActivities = [
     description: "$246 spent, 36 conversions, 3.2x ROAS",
     timestamp: "12h ago",
     icon: <FileText className="h-4 w-4 text-primary" />,
-    type: "system"
+    type: "system" as const
   },
 ];
 
