@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useCampaign } from "@/components/campaigns/CampaignContext";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +15,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-export const CampaignReview = () => {
+interface CampaignReviewProps {
+  onLaunchSuccess?: () => void;
+}
+
+export const CampaignReview = ({ onLaunchSuccess }: CampaignReviewProps) => {
   const { campaign } = useCampaign();
   const { toast } = useToast();
   const [confirming, setConfirming] = useState(false);
@@ -83,7 +86,11 @@ export const CampaignReview = () => {
       description: "Your campaign has been successfully launched"
     });
     setConfirming(false);
-    // Here you would navigate to the campaigns list
+    
+    // Call the success callback if provided
+    if (onLaunchSuccess) {
+      onLaunchSuccess();
+    }
   };
 
   return (
@@ -132,7 +139,7 @@ export const CampaignReview = () => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Channel:</span>
-                <Badge>{getChannelName()}</Badge>
+                <Badge>{campaign.type === "ads" ? "Ad Campaign" : campaign.type}</Badge>
               </div>
               {campaign.message.subject && (
                 <div className="flex justify-between items-center">
@@ -203,7 +210,15 @@ export const CampaignReview = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Send:</span>
-                <span className="font-medium">{getTimingText()}</span>
+                <span className="font-medium">
+                  {campaign.automation.timing === "now"
+                    ? "Send immediately"
+                    : campaign.automation.timing === "scheduled"
+                    ? campaign.automation.scheduledDate
+                      ? `Scheduled for ${format(campaign.automation.scheduledDate, "PPP")}`
+                      : "Scheduled (no date selected)"
+                    : "Recurring campaign"}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Automation rules:</span>
@@ -262,7 +277,7 @@ export const CampaignReview = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Channel:</span>
-              <span className="font-medium">{getChannelName()}</span>
+              <span className="font-medium">{campaign.type === "ads" ? "Ad Campaign" : campaign.type}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Recipients:</span>
@@ -270,7 +285,15 @@ export const CampaignReview = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Send time:</span>
-              <span className="font-medium">{getTimingText()}</span>
+              <span className="font-medium">
+                {campaign.automation.timing === "now"
+                  ? "Send immediately"
+                  : campaign.automation.timing === "scheduled"
+                  ? campaign.automation.scheduledDate
+                    ? `Scheduled for ${format(campaign.automation.scheduledDate, "PPP")}`
+                    : "Scheduled (no date selected)"
+                  : "Recurring campaign"}
+              </span>
             </div>
           </div>
           
