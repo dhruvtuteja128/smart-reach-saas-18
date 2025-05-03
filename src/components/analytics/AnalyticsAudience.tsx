@@ -94,9 +94,15 @@ export function AnalyticsAudience() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" />
                   <YAxis tickFormatter={(value) => `${value}%`} />
-                  <ChartTooltip>
-                    <ChartTooltipContent />
-                  </ChartTooltip>
+                  <Tooltip 
+                    formatter={(value) => [`${value}%`, "Retention"]}
+                    contentStyle={{ 
+                      backgroundColor: 'var(--card)', 
+                      borderColor: 'var(--border)',
+                      borderRadius: 'var(--radius)',
+                      fontSize: '12px'
+                    }}
+                  />
                   <Bar dataKey="Month 1" fill="#5E5CE6" />
                   <Bar dataKey="Month 2" fill="#7E69AB" />
                   <Bar dataKey="Month 3" fill="#9B87F5" />

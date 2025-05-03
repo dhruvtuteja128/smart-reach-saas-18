@@ -183,9 +183,15 @@ export function AnalyticsChannels() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" />
                   <YAxis tickFormatter={(value) => `${value}%`} />
-                  <ChartTooltip>
-                    <ChartTooltipContent />
-                  </ChartTooltip>
+                  <Tooltip 
+                    formatter={(value) => [`${value}%`, ""]}
+                    contentStyle={{ 
+                      backgroundColor: 'var(--card)', 
+                      borderColor: 'var(--border)',
+                      borderRadius: 'var(--radius)',
+                      fontSize: '12px'
+                    }}
+                  />
                   <Bar dataKey="openRate" name="Open Rate" fill="var(--color-openRate)" />
                   <Bar dataKey="clickRate" name="Click Rate" fill="var(--color-clickRate)" />
                   <Bar dataKey="replyRate" name="Reply Rate" fill="var(--color-replyRate)" />

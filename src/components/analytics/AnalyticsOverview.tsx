@@ -133,9 +133,15 @@ export function AnalyticsOverview() {
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="date" />
               <YAxis />
-              <ChartTooltip>
-                <ChartTooltipContent />
-              </ChartTooltip>
+              <Tooltip 
+                formatter={(value, name) => [value, name]}
+                contentStyle={{ 
+                  backgroundColor: 'var(--card)', 
+                  borderColor: 'var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '12px'
+                }}
+              />
               <Area
                 type="monotone"
                 dataKey="opens"
