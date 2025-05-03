@@ -17,6 +17,7 @@ type FunnelStep = {
   event: string;
   count: number;
   conversionRate?: number;
+  dropOffRate?: number;
 };
 
 // Mock funnel data
@@ -66,7 +67,7 @@ export function AnalyticsFunnels() {
   // Calculate conversion rates for the steps
   const stepsWithConversionRates = selectedFunnel.steps.map((step, index, array) => {
     if (index === 0) {
-      return { ...step, conversionRate: 100 };
+      return { ...step, conversionRate: 100 } as FunnelStep;
     }
     const conversionRate = (step.count / array[0].count) * 100;
     const dropOffRate = index > 0 
@@ -77,7 +78,7 @@ export function AnalyticsFunnels() {
       ...step, 
       conversionRate: parseFloat(conversionRate.toFixed(1)),
       dropOffRate: parseFloat(dropOffRate.toFixed(1))
-    };
+    } as FunnelStep;
   });
 
   return (

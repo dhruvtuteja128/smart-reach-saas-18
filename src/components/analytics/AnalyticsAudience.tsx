@@ -11,7 +11,8 @@ import {
   YAxis,
   CartesianGrid,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Tooltip
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -124,7 +125,7 @@ export function AnalyticsAudience() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="hour" />
                   <YAxis />
-                  <ChartTooltip
+                  <Tooltip 
                     formatter={(value) => [`${value}% engagement`, "Activity"]}
                     contentStyle={{ 
                       backgroundColor: 'var(--card)', 
@@ -154,7 +155,7 @@ export function AnalyticsAudience() {
                   </div>
                   <div className="h-8 w-full bg-muted rounded-md overflow-hidden relative">
                     <div 
-                      className="h-full bg-primary" 
+                      className="h-full rounded-full bg-primary" 
                       style={{ 
                         width: `${index === 0 ? 100 : (step.value / dropoffs[0].value * 100)}%`,
                         transition: "width 0.5s ease-in-out" 

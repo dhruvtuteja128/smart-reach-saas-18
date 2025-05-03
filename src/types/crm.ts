@@ -60,3 +60,11 @@ export interface Campaign {
   completedAt?: string;
   tags: string[];
 }
+
+export interface FunnelStep {
+  id: string;
+  event: string;
+  count: number;
+  conversionRate?: number;
+  dropOffRate?: number;
+}

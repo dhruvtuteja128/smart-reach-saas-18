@@ -186,7 +186,7 @@ export function AnalyticsOverview() {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip
+                  <Tooltip 
                     formatter={(value) => `${value}%`}
                     contentStyle={{ 
                       backgroundColor: 'var(--card)', 

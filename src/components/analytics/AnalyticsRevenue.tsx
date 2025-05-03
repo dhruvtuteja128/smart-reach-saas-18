@@ -13,7 +13,8 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
-  Cell
+  Cell,
+  Tooltip
 } from "recharts";
 import { DollarSign, TrendingUp, Clock, LineChart } from "lucide-react";
 
@@ -110,9 +111,15 @@ export function AnalyticsRevenue() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" />
                   <YAxis tickFormatter={(value) => `$${value / 1000}k`} />
-                  <ChartTooltip>
-                    <ChartTooltipContent />
-                  </ChartTooltip>
+                  <Tooltip
+                    formatter={(value) => [`$${value.toLocaleString()}`, "Revenue"]}
+                    contentStyle={{ 
+                      backgroundColor: 'var(--card)', 
+                      borderColor: 'var(--border)',
+                      borderRadius: 'var(--radius)',
+                      fontSize: '12px'
+                    }}
+                  />
                   <Bar dataKey="value" name="Revenue">
                     {revenueBySourceData.map((entry, index) => (
                       <Cell 
@@ -139,9 +146,15 @@ export function AnalyticsRevenue() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" />
                   <YAxis tickFormatter={(value) => `${value.toFixed(1)}x`} />
-                  <ChartTooltip>
-                    <ChartTooltipContent />
-                  </ChartTooltip>
+                  <Tooltip 
+                    formatter={(value) => [`${value}x`, "ROAS"]}
+                    contentStyle={{ 
+                      backgroundColor: 'var(--card)', 
+                      borderColor: 'var(--border)',
+                      borderRadius: 'var(--radius)',
+                      fontSize: '12px'
+                    }}
+                  />
                   <Bar dataKey="value" name="ROAS">
                     {roasData.map((entry, index) => (
                       <Cell 
