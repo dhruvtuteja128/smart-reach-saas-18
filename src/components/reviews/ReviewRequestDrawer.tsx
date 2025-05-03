@@ -20,7 +20,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/sheet";
 
 interface ReviewRequestDrawerProps {
   open: boolean;
