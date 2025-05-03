@@ -86,6 +86,16 @@ export function ReviewRequestDrawer({
                   WhatsApp
                 </TabsTrigger>
               </TabsList>
+              
+              <TabsContent value="sms" className="pt-4">
+                <Input id="recipient" placeholder="Enter phone number" />
+              </TabsContent>
+              <TabsContent value="email" className="pt-4">
+                <Input id="recipient" placeholder="Enter email address" />
+              </TabsContent>
+              <TabsContent value="whatsapp" className="pt-4">
+                <Input id="recipient" placeholder="Enter WhatsApp number" />
+              </TabsContent>
             </Tabs>
           </div>
           
@@ -132,15 +142,7 @@ export function ReviewRequestDrawer({
           
           <div>
             <Label htmlFor="recipient">Recipient</Label>
-            <TabsContent value="sms" className="p-0 mt-2">
-              <Input id="recipient" placeholder="Enter phone number" />
-            </TabsContent>
-            <TabsContent value="email" className="p-0 mt-2">
-              <Input id="recipient" placeholder="Enter email address" />
-            </TabsContent>
-            <TabsContent value="whatsapp" className="p-0 mt-2">
-              <Input id="recipient" placeholder="Enter WhatsApp number" />
-            </TabsContent>
+            {/* This div is intentionally left empty as TabsContent components are now moved inside the Tabs component above */}
           </div>
           
           <div className="bg-muted p-4 rounded-lg">
