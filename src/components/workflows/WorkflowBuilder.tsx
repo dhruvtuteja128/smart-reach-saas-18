@@ -1,8 +1,8 @@
 
 import { useState } from "react";
 import {
-  ArrowsOut,
-  ArrowsIn,
+  ZoomIn,
+  ZoomOut,
   Clock,
   Code,
   Cog,
@@ -128,11 +128,11 @@ export function WorkflowBuilder({ onSave, onClose }: WorkflowBuilderProps) {
         <div className="flex items-center gap-2">
           <div className="flex items-center bg-muted rounded-md">
             <Button variant="ghost" size="sm" onClick={handleZoomOut}>
-              <ArrowsIn className="h-4 w-4" />
+              <ZoomOut className="h-4 w-4" />
             </Button>
             <span className="px-2 text-sm">{zoom}%</span>
             <Button variant="ghost" size="sm" onClick={handleZoomIn}>
-              <ArrowsOut className="h-4 w-4" />
+              <ZoomIn className="h-4 w-4" />
             </Button>
           </div>
           <Button
