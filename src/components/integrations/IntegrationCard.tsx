@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Check, PlugZap, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { IntegrationDetailDialog } from "./IntegrationDetailDialog";
 
 export interface Integration {
@@ -43,8 +42,7 @@ export function IntegrationCard({ integration, onToggleConnection }: Integration
     if (integration.isConnected) {
       setShowDetail(true);
     } else {
-      toast({
-        title: "Connect first",
+      toast("Connect first", {
         description: "You need to connect this integration before configuring it.",
       });
     }

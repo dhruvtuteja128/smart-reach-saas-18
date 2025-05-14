@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Integration } from "./IntegrationCard";
 import { 
@@ -21,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { 
   RotateCw, 
   RefreshCcw, 
@@ -48,23 +47,20 @@ export function IntegrationDetailDialog({
   const [selectedTab, setSelectedTab] = useState("settings");
   
   const handleSaveSettings = () => {
-    toast({
-      title: "Settings updated",
+    toast("Settings updated", {
       description: `${integration.name} settings have been saved successfully.`,
     });
     onOpenChange(false);
   };
 
   const handleReconnect = () => {
-    toast({
-      title: "Reconnecting...",
+    toast("Reconnecting...", {
       description: `Attempting to reconnect to ${integration.name}.`,
     });
   };
 
   const handleSyncNow = () => {
-    toast({
-      title: "Sync started",
+    toast("Sync started", {
       description: `Manual sync with ${integration.name} has been initiated.`,
     });
   };

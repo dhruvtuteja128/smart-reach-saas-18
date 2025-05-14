@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Bot, Settings2, ListChecks, ClipboardCheck, Clock, MessageSquare, Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,7 +7,7 @@ import { AIAssistantStats } from "./AIAssistantStats";
 import { AITaskList } from "./AITaskList";
 import { AISettings } from "./AISettings";
 import { AIAvatar } from "./AIAvatar";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { AITask } from "./AITaskCard";
 
 // Mock data
@@ -72,8 +71,7 @@ export function AssistantPage() {
   
   const handleAutoActionsToggle = (enabled: boolean) => {
     setAutoActionsEnabled(enabled);
-    toast({
-      title: enabled ? "Auto-actions enabled" : "Auto-actions disabled",
+    toast(enabled ? "Auto-actions enabled" : "Auto-actions disabled", {
       description: enabled 
         ? "AI assistant will now automatically perform selected actions." 
         : "AI assistant will ask for approval before taking actions.",

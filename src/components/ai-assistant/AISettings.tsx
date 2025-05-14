@@ -1,4 +1,3 @@
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -20,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -55,8 +54,7 @@ export function AISettings() {
   });
 
   function onSubmit(data: FormValues) {
-    toast({
-      title: "AI settings updated",
+    toast("AI settings updated", {
       description: "Your AI assistant settings have been saved.",
     });
     console.log(data);

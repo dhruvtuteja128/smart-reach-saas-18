@@ -20,7 +20,7 @@ import {
   Trash 
 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -40,14 +40,12 @@ export function SecuritySettings() {
 
   const handleDeleteAccount = () => {
     if (accountDeleteConfirm === "DELETE") {
-      toast({
-        title: "Account Deleted",
+      toast("Account Deleted", {
         description: "Your account has been scheduled for deletion. You will receive a confirmation email shortly.",
       });
       setDeleteAccountDialog(false);
     } else {
-      toast({
-        title: "Confirmation Failed",
+      toast("Confirmation Failed", {
         description: "Please type DELETE in all caps to confirm account deletion.",
         variant: "destructive",
       });
@@ -55,8 +53,7 @@ export function SecuritySettings() {
   };
   
   const handleDataExport = () => {
-    toast({
-      title: "Export Requested",
+    toast("Export Requested", {
       description: "Your data export has been initiated. You'll receive a download link via email shortly.",
     });
   };

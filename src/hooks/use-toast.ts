@@ -1,12 +1,13 @@
 
-// Re-export the hook and components from our UI toast components
-import { type ToastActionElement, useToast as useToastUI } from "@/components/ui/toast";
-import { toast as sonnerToast } from "@/components/ui/sonner";
+// Re-export sonner toast for direct usage
+import { toast } from "sonner";
 
-export { type ToastActionElement };
+export { toast };
+export type ToastActionElement = React.ReactElement;
 
-// Properly export the hook
-export const useToast = useToastUI;
-
-// Export the toast function for direct usage
-export const toast = sonnerToast;
+// If you need the hook-style API in the future
+export const useToast = () => {
+  return {
+    toast,
+  };
+};

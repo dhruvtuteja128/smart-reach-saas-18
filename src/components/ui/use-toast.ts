@@ -1,5 +1,6 @@
 
-// Re-export from the hooks directory
-import { useToast, toast, type ToastActionElement } from "@/hooks/use-toast";
+// Re-export from sonner
+import { toast } from "sonner";
+import { type ToastActionElement, useToast } from "@/hooks/use-toast";
 
-export { useToast, toast, type ToastActionElement };
+export { toast, useToast, type ToastActionElement };
