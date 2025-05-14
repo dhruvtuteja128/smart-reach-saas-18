@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Mic, Send, X, Bot, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { AICommandResponse } from "./AICommandResponse";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface AICommandPanelProps {
   assistantName: string;
@@ -29,6 +28,7 @@ export function AICommandPanel({ assistantName, onClose }: AICommandPanelProps) 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [recordingTime, setRecordingTime] = useState(0);
   const recordingInterval = useRef<NodeJS.Timeout | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (textareaRef.current) {

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useCampaign } from "@/components/campaigns/CampaignContext";
 import { Badge } from "@/components/ui/badge";

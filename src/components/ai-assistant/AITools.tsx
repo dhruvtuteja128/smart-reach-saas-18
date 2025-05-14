@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   MessageSquare,
@@ -12,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface AITool {
   id: string;

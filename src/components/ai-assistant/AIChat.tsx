@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { 
   Send, 
@@ -20,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { AIMessage } from "./AIMessage";
 import { SuggestedPrompts } from "./SuggestedPrompts";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Message {
@@ -145,6 +144,7 @@ export function AIChat({ smartMode }: AIChatProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   // Add initial greeting message when component mounts
   useEffect(() => {
