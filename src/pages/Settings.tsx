@@ -56,20 +56,20 @@ const Settings = () => {
         <div className="flex flex-col md:flex-row gap-8">
           {/* Mobile Tabs */}
           <div className="md:hidden w-full mb-6">
-            <TabsList className="w-full overflow-x-auto flex-wrap justify-start h-auto p-1 gap-1">
-              {tabs.map((tab) => (
-                <TabsTrigger 
-                  key={tab.id} 
-                  value={tab.id}
-                  className="flex items-center gap-2 px-3 py-2"
-                  onClick={() => setActiveTab(tab.id)}
-                  data-state={activeTab === tab.id ? "active" : "inactive"}
-                >
-                  <tab.icon className="h-4 w-4" />
-                  <span className="whitespace-nowrap">{tab.label}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="w-full overflow-x-auto flex-wrap justify-start h-auto p-1 gap-1">
+                {tabs.map((tab) => (
+                  <TabsTrigger 
+                    key={tab.id} 
+                    value={tab.id}
+                    className="flex items-center gap-2 px-3 py-2"
+                  >
+                    <tab.icon className="h-4 w-4" />
+                    <span className="whitespace-nowrap">{tab.label}</span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
           </div>
 
           <Tabs 
