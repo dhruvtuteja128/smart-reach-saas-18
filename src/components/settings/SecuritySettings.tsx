@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -185,7 +184,6 @@ export function SecuritySettings() {
                   onChange={(e) => setIpAddresses(e.target.value)}
                   placeholder="e.g. 192.168.1.1"
                   className="mt-1.5"
-                  multiline
                 />
               </div>
               <p className="text-sm text-muted-foreground">
