@@ -19,7 +19,8 @@ export const CampaignMessage = () => {
 
   const handleGenerateContent = () => {
     if (!goal) {
-      toast("Error", { 
+      toast({
+        title: "Error", 
         description: "Please enter a campaign goal first",
         variant: "destructive"
       });
@@ -52,7 +53,8 @@ export const CampaignMessage = () => {
       
       setGenerating(false);
       
-      toast("Content generated", {
+      toast({
+        title: "Content generated",
         description: "AI has created message content based on your goal"
       });
     }, 2000);
@@ -61,10 +63,18 @@ export const CampaignMessage = () => {
   const handleToggleAiOptimization = (checked: boolean) => {
     updateMessage({ aiOptimized: checked });
     
-    toast(checked ? "AI optimization enabled" : "AI optimization disabled", {
+    toast({
+      title: checked ? "AI optimization enabled" : "AI optimization disabled",
       description: checked 
         ? "Campaign will be automatically optimized for better performance" 
         : "Campaign will use your content without optimization"
+    });
+  };
+
+  const handleSaveAsTemplate = () => {
+    toast({
+      title: "Template saved", 
+      description: "Your message has been saved as a template" 
     });
   };
 
@@ -222,7 +232,7 @@ export const CampaignMessage = () => {
       </Tabs>
       
       <div className="mt-6 flex justify-end">
-        <Button variant="outline" onClick={() => toast("Template saved", { description: "Your message has been saved as a template" })}>
+        <Button variant="outline" onClick={handleSaveAsTemplate}>
           <Save className="h-4 w-4 mr-2" />
           Save as Template
         </Button>

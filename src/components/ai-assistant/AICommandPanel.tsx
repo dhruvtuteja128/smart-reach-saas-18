@@ -89,7 +89,8 @@ export function AICommandPanel({ assistantName, onClose }: AICommandPanelProps) 
     
     if (!isRecording) {
       // Start recording
-      toast("Voice recording started", {
+      toast({
+        title: "Voice recording started",
         description: "Speak clearly into your microphone..."
       });
       
@@ -97,13 +98,16 @@ export function AICommandPanel({ assistantName, onClose }: AICommandPanelProps) 
       setTimeout(() => {
         setIsRecording(false);
         setPrompt("Create a Facebook ad campaign for our summer sale");
-        toast("Voice input captured", {
+        toast({
+          title: "Voice input captured",
           description: "Text transcribed from your voice"
         });
       }, 3000);
     } else {
       // Stop recording
-      toast("Voice recording cancelled");
+      toast({
+        title: "Voice recording cancelled"
+      });
     }
   };
 
@@ -137,14 +141,16 @@ export function AICommandPanel({ assistantName, onClose }: AICommandPanelProps) 
               console.log("Approved"); 
               setResponse(null);
               setPrompt("");
-              toast("Command approved", {
+              toast({
+                title: "Command approved",
                 description: "The AI assistant will execute your request."
               });
             }}
             onReject={() => {
               console.log("Rejected");
               setResponse(null);
-              toast("Command rejected", {
+              toast({
+                title: "Command rejected",
                 description: "The request has been cancelled."
               });
             }}

@@ -1,5 +1,5 @@
 
-// Re-export sonner toast for direct usage
+import * as React from "react";
 import { toast as sonnerToast, type ToastT } from "sonner";
 
 // Create a wrapper function to handle both shadcn/ui style and sonner style
@@ -16,14 +16,19 @@ function toast(props: ToastT | {
   // If it's an object with title, convert to sonner format
   const { title, description, variant, action, ...rest } = props as any;
 
-  return sonnerToast(title as string, {
-    description,
-    // Handle variant if specified
-    ...(variant === 'destructive' ? { style: { backgroundColor: 'var(--destructive)', color: 'var(--destructive-foreground)' } } : {}),
-    // Handle action if specified
-    ...(action ? { action } : {}),
-    ...rest
-  });
+  if (title) {
+    return sonnerToast(title as string, {
+      description,
+      // Handle variant if specified
+      ...(variant === 'destructive' ? { style: { backgroundColor: 'var(--destructive)', color: 'var(--destructive-foreground)' } } : {}),
+      // Handle action if specified
+      ...(action ? { action } : {}),
+      ...rest
+    });
+  } else {
+    // If no title, use description as title
+    return sonnerToast(description as string || "", rest);
+  }
 }
 
 // Export the toast function

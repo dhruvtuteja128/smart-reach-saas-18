@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useCampaign } from "@/components/campaigns/CampaignContext";
 import { Badge } from "@/components/ui/badge";
@@ -69,7 +70,8 @@ export const CampaignReview = ({ onLaunchSuccess }: CampaignReviewProps) => {
   };
 
   const handleSendTest = () => {
-    toast("Test sent", {
+    toast({
+      title: "Test sent",
       description: "A test campaign has been sent to your email"
     });
   };
@@ -79,7 +81,8 @@ export const CampaignReview = ({ onLaunchSuccess }: CampaignReviewProps) => {
   };
   
   const handleConfirmLaunch = () => {
-    toast("Campaign launched", {
+    toast({
+      title: "Campaign launched",
       description: "Your campaign has been successfully launched"
     });
     setConfirming(false);

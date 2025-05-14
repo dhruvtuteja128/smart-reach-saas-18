@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { IntegrationCard, Integration } from "./IntegrationCard";
 import { IntegrationsEmptyState } from "./IntegrationsEmptyState";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 
 // Mock data for integrations
 const INITIAL_INTEGRATIONS: Integration[] = [
@@ -207,13 +207,15 @@ export function IntegrationsGrid({ category, searchQuery }: IntegrationsGridProp
         
         // Show toast message
         if (newConnection) {
-          toast(`${integration.name} connected`, {
-            description: "The integration has been successfully connected.",
+          toast({
+            title: "Integration activated",
+            description: `${integration.name} has been successfully activated`
           });
         } else {
-          toast(`${integration.name} disconnected`, {
-            description: "The integration has been disconnected.",
-            variant: "destructive",
+          toast({
+            title: "Integration deactivated",
+            description: `${integration.name} has been successfully deactivated`,
+            variant: "destructive"
           });
         }
         

@@ -72,7 +72,8 @@ export function AssistantPage() {
   
   const handleAutoActionsToggle = (enabled: boolean) => {
     setAutoActionsEnabled(enabled);
-    toast(enabled ? "Auto-actions enabled" : "Auto-actions disabled", {
+    toast({
+      title: enabled ? "Auto-actions enabled" : "Auto-actions disabled",
       description: enabled 
         ? "AI assistant will now automatically perform selected actions." 
         : "AI assistant will ask for approval before taking actions."
