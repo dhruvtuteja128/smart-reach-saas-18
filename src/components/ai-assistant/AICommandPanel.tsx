@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Mic, Send, X, Bot, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -91,7 +92,7 @@ export function AICommandPanel({ assistantName, onClose }: AICommandPanelProps) 
       // Start recording
       toast({
         title: "Voice recording started",
-        description: "Speak clearly into your microphone...",
+        description: "Speak clearly into your microphone..."
       });
       
       // Simulate speech recognition after a few seconds
@@ -100,13 +101,13 @@ export function AICommandPanel({ assistantName, onClose }: AICommandPanelProps) 
         setPrompt("Create a Facebook ad campaign for our summer sale");
         toast({
           title: "Voice input captured",
-          description: "Text transcribed from your voice",
+          description: "Text transcribed from your voice"
         });
       }, 3000);
     } else {
       // Stop recording
       toast({
-        title: "Voice recording cancelled",
+        title: "Voice recording cancelled"
       });
     }
   };

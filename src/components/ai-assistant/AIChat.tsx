@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { 
   Send, 
@@ -195,8 +196,7 @@ export function AIChat({ smartMode }: AIChatProps) {
       // Handle error
       toast({
         title: "Error",
-        description: "Sorry, I couldn't process your request. Please try again.",
-        variant: "destructive"
+        description: "Sorry, I couldn't process your request. Please try again."
       });
     } finally {
       setIsLoading(false);
@@ -215,7 +215,7 @@ export function AIChat({ smartMode }: AIChatProps) {
     if (!isRecording) {
       toast({
         title: "Voice recording started",
-        description: "Speak clearly...",
+        description: "Speak clearly..."
       });
       // This would be where you implement actual voice recording
       // For demo, we'll simulate with a timeout
@@ -224,12 +224,12 @@ export function AIChat({ smartMode }: AIChatProps) {
         setInputValue("Generate an email campaign for new product launch");
         toast({
           title: "Voice input captured",
-          description: "Text transcribed from your voice",
+          description: "Text transcribed from your voice"
         });
       }, 3000);
     } else {
       toast({
-        title: "Voice recording cancelled",
+        title: "Voice recording cancelled"
       });
     }
   };
@@ -237,12 +237,12 @@ export function AIChat({ smartMode }: AIChatProps) {
   const handleFeedback = (messageId: string, isPositive: boolean) => {
     if (isPositive) {
       toast({
-        title: "Thank you for your positive feedback!",
+        title: "Thank you for your positive feedback!"
       });
     } else {
       toast({
         title: "Thank you for your feedback",
-        description: "We'll use it to improve our AI responses.",
+        description: "We'll use it to improve our AI responses."
       });
     }
     // In a real app, you'd send this feedback to your backend
@@ -252,54 +252,54 @@ export function AIChat({ smartMode }: AIChatProps) {
     switch (action) {
       case "view":
         toast({
-          title: "Opening in viewer...",
+          title: "Opening in viewer..."
         });
         break;
       case "edit":
         toast({
-          title: "Opening editor...",
+          title: "Opening editor..."
         });
         break;
       case "schedule":
         toast({
-          title: "Opening scheduler...",
+          title: "Opening scheduler..."
         });
         break;
       case "activate":
         toast({
-          title: "Workflow activated!",
+          title: "Workflow activated!"
         });
         break;
       case "report":
         toast({
-          title: "Generating full analytics report...",
+          title: "Generating full analytics report..."
         });
         break;
       case "export":
         toast({
-          title: "Exporting data...",
+          title: "Exporting data..."
         });
         break;
       case "copy":
         // In a real app, you would need to extract the text to copy
         navigator.clipboard.writeText("Sample text copied to clipboard");
         toast({
-          title: "Copied to clipboard!",
+          title: "Copied to clipboard!"
         });
         break;
       case "more":
         toast({
-          title: "Generating more options...",
+          title: "Generating more options..."
         });
         break;
       case "use":
         toast({
-          title: "Adding to campaign editor...",
+          title: "Adding to campaign editor..."
         });
         break;
       default:
         toast({
-          title: `Action ${action} triggered`,
+          title: `Action ${action} triggered`
         });
     }
   };
@@ -312,13 +312,13 @@ export function AIChat({ smartMode }: AIChatProps) {
       timestamp: new Date(),
     }]);
     toast({
-      title: "Chat history cleared",
+      title: "Chat history cleared"
     });
   };
 
   const handleHistoryItemClick = (id: string, title: string) => {
     toast({
-      title: `Loading conversation: ${title}`,
+      title: `Loading conversation: ${title}`
     });
     setShowHistory(false);
     // In a real app, you would fetch the actual conversation

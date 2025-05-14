@@ -49,14 +49,14 @@ export const CampaignBuilder = ({ isLoading, campaignId }: CampaignBuilderProps)
   const handleSaveDraft = () => {
     toast({
       title: "Campaign saved",
-      description: "Your campaign has been saved as a draft.",
+      description: "Your campaign has been saved as a draft."
     });
   };
   
   const handleLaunchSuccess = () => {
     toast({
       title: "Campaign launched successfully",
-      description: "Your campaign is now live and running.",
+      description: "Your campaign is now live and running."
     });
     // Navigate back to campaigns page after successful launch
     navigate("/campaigns");
