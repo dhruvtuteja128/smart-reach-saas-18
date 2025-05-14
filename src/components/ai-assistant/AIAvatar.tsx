@@ -20,15 +20,20 @@ interface AIAvatarProps {
   state?: AIState;
   name?: string;
   className?: string;
+  onOpen?: () => void;
+  onClose?: () => void;
 }
 
 export function AIAvatar({ 
   state = "online", 
   name = "AIDA", 
-  className 
+  className,
+  onOpen,
+  onClose
 }: AIAvatarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [pulseState, setPulseState] = useState(false);
+  const [bounce, setBounce] = useState(false);
 
   // Create a nice breathing effect when online
   useEffect(() => {
@@ -39,6 +44,25 @@ export function AIAvatar({
       return () => clearInterval(interval);
     }
   }, [state]);
+
+  // Add a subtle bounce effect occasionally
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBounce(true);
+      setTimeout(() => {
+        setBounce(false);
+      }, 500);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && onOpen) {
+      onOpen();
+    } else if (!isOpen && onClose) {
+      onClose();
+    }
+  }, [isOpen, onOpen, onClose]);
 
   const getBackgroundClass = () => {
     switch (state) {
@@ -75,6 +99,7 @@ export function AIAvatar({
               "fixed z-50 flex items-center justify-center rounded-full w-14 h-14 shadow-lg transition-all duration-300 hover:scale-110",
               getBackgroundClass(),
               pulseState && state === "online" && "animate-pulse",
+              bounce && "animate-bounce",
               className
             )}
             aria-label={`${name} AI Assistant`}

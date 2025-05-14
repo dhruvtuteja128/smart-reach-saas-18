@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { 
   Send, 
@@ -19,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { AIMessage } from "./AIMessage";
 import { SuggestedPrompts } from "./SuggestedPrompts";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Message {
@@ -192,7 +193,11 @@ export function AIChat({ smartMode }: AIChatProps) {
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       // Handle error
-      toast.error("Sorry, I couldn't process your request. Please try again.");
+      toast({
+        title: "Error",
+        description: "Sorry, I couldn't process your request. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -208,61 +213,94 @@ export function AIChat({ smartMode }: AIChatProps) {
   const toggleRecording = () => {
     setIsRecording(!isRecording);
     if (!isRecording) {
-      toast.info("Voice recording started. Speak clearly...");
+      toast({
+        title: "Voice recording started",
+        description: "Speak clearly...",
+      });
       // This would be where you implement actual voice recording
       // For demo, we'll simulate with a timeout
       setTimeout(() => {
         setIsRecording(false);
         setInputValue("Generate an email campaign for new product launch");
-        toast.info("Voice input captured.");
+        toast({
+          title: "Voice input captured",
+          description: "Text transcribed from your voice",
+        });
       }, 3000);
     } else {
-      toast.info("Voice recording cancelled.");
+      toast({
+        title: "Voice recording cancelled",
+      });
     }
   };
 
   const handleFeedback = (messageId: string, isPositive: boolean) => {
     if (isPositive) {
-      toast.success("Thank you for your positive feedback!");
+      toast({
+        title: "Thank you for your positive feedback!",
+      });
     } else {
-      toast.info("Thank you for your feedback. We'll use it to improve our AI responses.");
+      toast({
+        title: "Thank you for your feedback",
+        description: "We'll use it to improve our AI responses.",
+      });
     }
     // In a real app, you'd send this feedback to your backend
   };
 
-  const handleActionClick = (action: string, messageId: string) => {
+  const handleActionClick = (action: string) => {
     switch (action) {
       case "view":
-        toast.info("Opening in viewer...");
+        toast({
+          title: "Opening in viewer...",
+        });
         break;
       case "edit":
-        toast.info("Opening editor...");
+        toast({
+          title: "Opening editor...",
+        });
         break;
       case "schedule":
-        toast.info("Opening scheduler...");
+        toast({
+          title: "Opening scheduler...",
+        });
         break;
       case "activate":
-        toast.success("Workflow activated!");
+        toast({
+          title: "Workflow activated!",
+        });
         break;
       case "report":
-        toast.info("Generating full analytics report...");
+        toast({
+          title: "Generating full analytics report...",
+        });
         break;
       case "export":
-        toast.info("Exporting data...");
+        toast({
+          title: "Exporting data...",
+        });
         break;
       case "copy":
         // In a real app, you would need to extract the text to copy
         navigator.clipboard.writeText("Sample text copied to clipboard");
-        toast.success("Copied to clipboard!");
+        toast({
+          title: "Copied to clipboard!",
+        });
         break;
       case "more":
-        toast.info("Generating more options...");
+        toast({
+          title: "Generating more options...",
+        });
         break;
       case "use":
-        toast.info("Adding to campaign editor...");
+        toast({
+          title: "Adding to campaign editor...",
+        });
         break;
       default:
-        toast.info(`Action ${action} triggered`);
+        toast({
+          title: `Action ${action} triggered`,
+        });
     }
   };
 
@@ -273,11 +311,15 @@ export function AIChat({ smartMode }: AIChatProps) {
       content: "Chat history has been cleared. How else can I help you today?",
       timestamp: new Date(),
     }]);
-    toast.info("Chat history cleared.");
+    toast({
+      title: "Chat history cleared",
+    });
   };
 
   const handleHistoryItemClick = (id: string, title: string) => {
-    toast.info(`Loading conversation: ${title}`);
+    toast({
+      title: `Loading conversation: ${title}`,
+    });
     setShowHistory(false);
     // In a real app, you would fetch the actual conversation
   };
@@ -297,7 +339,7 @@ export function AIChat({ smartMode }: AIChatProps) {
                 key={message.id}
                 message={message}
                 onFeedback={handleFeedback}
-                onActionClick={(action) => handleActionClick(action, message.id)}
+                onActionClick={handleActionClick}
               />
             ))}
             
@@ -339,21 +381,23 @@ export function AIChat({ smartMode }: AIChatProps) {
               disabled={isLoading}
             />
             <div className="absolute right-1 flex gap-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    className={cn(isRecording && "text-red-500")}
-                    onClick={toggleRecording}
-                    disabled={isLoading}
-                  >
-                    {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{isRecording ? "Stop recording" : "Start voice input"}</TooltipContent>
-              </Tooltip>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className={cn(isRecording && "text-red-500")}
+                      onClick={toggleRecording}
+                      disabled={isLoading}
+                    >
+                      {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{isRecording ? "Stop recording" : "Start voice input"}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               
               <Button
                 type="button"

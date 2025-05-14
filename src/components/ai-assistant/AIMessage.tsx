@@ -1,205 +1,188 @@
 
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { 
+  Bot, 
   Copy, 
+  Check, 
   ThumbsUp, 
   ThumbsDown,
-  MoreHorizontal,
-  Check,
+  ArrowRight
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
-interface MessageProps {
-  message: {
-    id: string;
-    role: "user" | "assistant";
-    content: string;
-    timestamp: Date;
-    intent?: string;
-    actions?: {
-      label: string;
-      action: string;
-    }[];
-  };
+interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+  intent?: string;
+  actions?: {
+    label: string;
+    action: string;
+  }[];
+}
+
+interface AIMessageProps {
+  message: Message;
   onFeedback: (messageId: string, isPositive: boolean) => void;
   onActionClick: (action: string) => void;
 }
 
-export function AIMessage({ message, onFeedback, onActionClick }: MessageProps) {
+export function AIMessage({ message, onFeedback, onActionClick }: AIMessageProps) {
   const [copied, setCopied] = useState(false);
+  const [feedback, setFeedback] = useState<"none" | "positive" | "negative">("none");
   
-  const handleCopy = () => {
+  const isAssistant = message.role === "assistant";
+  const hasActions = isAssistant && message.actions && message.actions.length > 0;
+  
+  const copyToClipboard = () => {
     navigator.clipboard.writeText(message.content);
     setCopied(true);
+    toast.success("Copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
-
-  const getIntentColor = (intent?: string) => {
-    switch (intent) {
-      case "campaign":
-        return "bg-blue-100 text-blue-800";
-      case "workflow":
-        return "bg-purple-100 text-purple-800";
-      case "analytics":
-        return "bg-emerald-100 text-emerald-800";
-      case "copywriting":
-        return "bg-amber-100 text-amber-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+  
+  const handleFeedback = (isPositive: boolean) => {
+    setFeedback(isPositive ? "positive" : "negative");
+    onFeedback(message.id, isPositive);
   };
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
+  const getIntentBadge = () => {
+    if (!message.intent) return null;
+    
+    const intentConfig: Record<string, { label: string, className: string }> = {
+      campaign: { 
+        label: "Campaign", 
+        className: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
+      },
+      workflow: { 
+        label: "Workflow", 
+        className: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300" 
+      },
+      analytics: { 
+        label: "Analytics", 
+        className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" 
+      },
+      copywriting: { 
+        label: "Copy", 
+        className: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300" 
+      }
+    };
+    
+    const config = intentConfig[message.intent] || { 
+      label: message.intent, 
+      className: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300" 
+    };
+    
+    return (
+      <Badge className={cn("capitalize", config.className)}>
+        {config.label}
+      </Badge>
+    );
   };
 
   return (
     <div className={cn(
-      "flex items-start gap-4",
-      message.role === "user" && "flex-row-reverse"
+      "flex items-start gap-4 animate-fade-in",
+      !isAssistant && "flex-row-reverse"
     )}>
-      {/* Avatar or icon */}
-      <div className={cn(
-        "p-2 rounded-full flex-shrink-0",
-        message.role === "assistant" ? "bg-primary/10" : "bg-secondary/10"
-      )}>
-        {message.role === "assistant" ? (
-          <svg 
-            width="24" 
-            height="24" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            className="text-primary"
-          >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-        ) : (
-          <svg 
-            width="24" 
-            height="24" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            className="text-secondary"
-          >
-            <circle cx="12" cy="8" r="5"></circle>
-            <path d="M20 21a8 8 0 1 0-16 0"></path>
-          </svg>
-        )}
-      </div>
-
-      {/* Message content */}
-      <div className={cn(
-        "flex flex-col",
-        message.role === "user" ? "items-end" : "items-start",
-        "max-w-[calc(100%-80px)]"
-      )}>
-        {/* Intent badge for AI messages */}
-        {message.role === "assistant" && message.intent && (
-          <Badge className={cn(getIntentColor(message.intent), "mb-2")}>
-            {message.intent.charAt(0).toUpperCase() + message.intent.slice(1)}
-          </Badge>
-        )}
-        
-        <div className={cn(
-          "rounded-lg p-4", 
-          message.role === "assistant" 
-            ? "bg-background border" 
-            : "bg-primary text-primary-foreground"
-        )}>
-          <div className="whitespace-pre-wrap text-sm">
-            {message.content}
+      {isAssistant ? (
+        <Avatar className="w-8 h-8 bg-primary">
+          <AvatarFallback><Bot className="h-5 w-5 text-primary-foreground" /></AvatarFallback>
+        </Avatar>
+      ) : (
+        <div className="w-8 h-8 rounded-full bg-secondary">
+          <div className="h-full w-full flex items-center justify-center text-secondary-foreground font-medium">
+            U
           </div>
         </div>
-        
-        {/* Action buttons */}
-        {message.role === "assistant" && message.actions && message.actions.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {message.actions.map((action, index) => (
-              <Button 
-                key={index} 
-                variant="secondary" 
-                size="sm"
-                onClick={() => onActionClick(action.action)}
-              >
-                {action.label}
-              </Button>
-            ))}
-          </div>
-        )}
-        
-        {/* Timestamp and actions */}
+      )}
+      
+      <div className={cn(
+        "flex flex-col max-w-[85%]",
+        !isAssistant && "items-end"
+      )}>
         <div className={cn(
-          "flex items-center gap-2 mt-1 text-xs text-muted-foreground",
-          message.role === "user" ? "flex-row-reverse" : "flex-row"
+          "rounded-lg py-2 px-3",
+          isAssistant ? "bg-muted" : "bg-primary text-primary-foreground",
+          message.intent && "border-l-4",
+          message.intent === "campaign" && "border-purple-500",
+          message.intent === "workflow" && "border-orange-500",
+          message.intent === "analytics" && "border-blue-500",
+          message.intent === "copywriting" && "border-pink-500"
         )}>
-          <span>{formatTime(message.timestamp)}</span>
+          <div className="flex items-center gap-2 mb-1">
+            {isAssistant && getIntentBadge()}
+            <span className="text-xs text-muted-foreground">
+              {new Date(message.timestamp).toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              })}
+            </span>
+          </div>
           
-          {message.role === "assistant" && (
-            <div className="flex items-center gap-1">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-6 w-6" 
-                onClick={handleCopy}
-              >
-                {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-6 w-6" 
-                onClick={() => onFeedback(message.id, true)}
-              >
-                <ThumbsUp className="h-3 w-3" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-6 w-6" 
-                onClick={() => onFeedback(message.id, false)}
-              >
-                <ThumbsDown className="h-3 w-3" />
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6">
-                    <MoreHorizontal className="h-3 w-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => onActionClick("regenerate")}>
-                    Regenerate response
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onActionClick("improve")}>
-                    Improve response
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onActionClick("shorten")}>
-                    Make it shorter
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onActionClick("expand")}>
-                    Make it longer
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          )}
+          <div className="whitespace-pre-wrap text-sm">{message.content}</div>
         </div>
+        
+        {isAssistant && (
+          <div className="flex flex-wrap items-center mt-2 gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={copyToClipboard}
+            >
+              {copied ? <Check className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
+              {copied ? "Copied" : "Copy"}
+            </Button>
+            
+            {hasActions && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {message.actions.map((action) => (
+                  <Button
+                    key={action.action}
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs bg-background"
+                    onClick={() => onActionClick(action.action)}
+                  >
+                    {action.label}
+                    <ArrowRight className="ml-1 h-3 w-3" />
+                  </Button>
+                ))}
+              </div>
+            )}
+            
+            <div className="flex items-center ml-auto gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "h-7 w-7 p-0",
+                  feedback === "positive" && "text-primary"
+                )}
+                onClick={() => handleFeedback(true)}
+              >
+                <ThumbsUp className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "h-7 w-7 p-0",
+                  feedback === "negative" && "text-destructive"
+                )}
+                onClick={() => handleFeedback(false)}
+              >
+                <ThumbsDown className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

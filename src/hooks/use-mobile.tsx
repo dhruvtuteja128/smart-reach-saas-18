@@ -6,24 +6,20 @@ export function useMediaQuery(query: string): boolean {
 
   useEffect(() => {
     const media = window.matchMedia(query);
-    const updateMatches = () => setMatches(media.matches);
+    if (media.matches !== matches) {
+      setMatches(media.matches);
+    }
+
+    const listener = () => setMatches(media.matches);
+    media.addEventListener("change", listener);
     
-    // Set initial value
-    updateMatches();
-    
-    // Setup listeners for changes
-    media.addEventListener("change", updateMatches);
-    
-    // Clean up
-    return () => {
-      media.removeEventListener("change", updateMatches);
-    };
-  }, [query]);
+    return () => media.removeEventListener("change", listener);
+  }, [matches, query]);
 
   return matches;
 }
 
-// Add the useIsMobile hook that was missing
+// Common media query for mobile devices
 export function useIsMobile(): boolean {
   return useMediaQuery("(max-width: 768px)");
 }
