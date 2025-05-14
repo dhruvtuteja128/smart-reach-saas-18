@@ -3,7 +3,7 @@ import { useCampaign } from "@/components/campaigns/CampaignContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Mail, MessageCircle, Phone, BarChart3, Calendar, Clock, Users, Check, AlertTriangle } from "lucide-react";
 import {
@@ -21,7 +21,6 @@ interface CampaignReviewProps {
 
 export const CampaignReview = ({ onLaunchSuccess }: CampaignReviewProps) => {
   const { campaign } = useCampaign();
-  const { toast } = useToast();
   const [confirming, setConfirming] = useState(false);
   
   const getChannelIcon = () => {
@@ -70,8 +69,7 @@ export const CampaignReview = ({ onLaunchSuccess }: CampaignReviewProps) => {
   };
 
   const handleSendTest = () => {
-    toast({
-      title: "Test sent",
+    toast("Test sent", {
       description: "A test campaign has been sent to your email"
     });
   };
@@ -81,8 +79,7 @@ export const CampaignReview = ({ onLaunchSuccess }: CampaignReviewProps) => {
   };
   
   const handleConfirmLaunch = () => {
-    toast({
-      title: "Campaign launched",
+    toast("Campaign launched", {
       description: "Your campaign has been successfully launched"
     });
     setConfirming(false);

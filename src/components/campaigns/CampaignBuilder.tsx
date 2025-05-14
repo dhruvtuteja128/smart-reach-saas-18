@@ -7,7 +7,7 @@ import { CampaignMessage } from "@/components/campaigns/steps/CampaignMessage";
 import { CampaignAutomation } from "@/components/campaigns/steps/CampaignAutomation";
 import { CampaignReview } from "@/components/campaigns/steps/CampaignReview";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 import { CampaignProvider } from "@/components/campaigns/CampaignContext";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +20,6 @@ interface CampaignBuilderProps {
 }
 
 export const CampaignBuilder = ({ isLoading, campaignId }: CampaignBuilderProps) => {
-  const { toast } = useToast();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<CampaignStep>(1);
   
@@ -47,15 +46,13 @@ export const CampaignBuilder = ({ isLoading, campaignId }: CampaignBuilderProps)
   };
 
   const handleSaveDraft = () => {
-    toast({
-      title: "Campaign saved",
+    toast("Campaign saved", {
       description: "Your campaign has been saved as a draft."
     });
   };
   
   const handleLaunchSuccess = () => {
-    toast({
-      title: "Campaign launched successfully",
+    toast("Campaign launched successfully", {
       description: "Your campaign is now live and running."
     });
     // Navigate back to campaigns page after successful launch

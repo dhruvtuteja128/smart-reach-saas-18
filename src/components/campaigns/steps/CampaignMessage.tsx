@@ -9,19 +9,17 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Zap, Sparkles, Save, Palette, Image, FileUp, MessageCircle, FileText } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 export const CampaignMessage = () => {
   const { campaign, updateMessage } = useCampaign();
-  const { toast } = useToast();
   const [goal, setGoal] = useState(campaign.message.goal || "");
   const [generating, setGenerating] = useState(false);
   const [selectedTab, setSelectedTab] = useState("compose");
 
   const handleGenerateContent = () => {
     if (!goal) {
-      toast({
-        title: "Error",
+      toast("Error", { 
         description: "Please enter a campaign goal first",
         variant: "destructive"
       });
@@ -54,8 +52,7 @@ export const CampaignMessage = () => {
       
       setGenerating(false);
       
-      toast({
-        title: "Content generated",
+      toast("Content generated", {
         description: "AI has created message content based on your goal"
       });
     }, 2000);
@@ -64,8 +61,7 @@ export const CampaignMessage = () => {
   const handleToggleAiOptimization = (checked: boolean) => {
     updateMessage({ aiOptimized: checked });
     
-    toast({
-      title: checked ? "AI optimization enabled" : "AI optimization disabled",
+    toast(checked ? "AI optimization enabled" : "AI optimization disabled", {
       description: checked 
         ? "Campaign will be automatically optimized for better performance" 
         : "Campaign will use your content without optimization"
@@ -226,7 +222,7 @@ export const CampaignMessage = () => {
       </Tabs>
       
       <div className="mt-6 flex justify-end">
-        <Button variant="outline" onClick={() => toast({ title: "Template saved", description: "Your message has been saved as a template" })}>
+        <Button variant="outline" onClick={() => toast("Template saved", { description: "Your message has been saved as a template" })}>
           <Save className="h-4 w-4 mr-2" />
           Save as Template
         </Button>

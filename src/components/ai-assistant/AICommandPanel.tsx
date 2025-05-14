@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { AICommandResponse } from "./AICommandResponse";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 interface AICommandPanelProps {
   assistantName: string;
@@ -29,7 +29,6 @@ export function AICommandPanel({ assistantName, onClose }: AICommandPanelProps) 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [recordingTime, setRecordingTime] = useState(0);
   const recordingInterval = useRef<NodeJS.Timeout | null>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -90,8 +89,7 @@ export function AICommandPanel({ assistantName, onClose }: AICommandPanelProps) 
     
     if (!isRecording) {
       // Start recording
-      toast({
-        title: "Voice recording started",
+      toast("Voice recording started", {
         description: "Speak clearly into your microphone..."
       });
       
@@ -99,16 +97,13 @@ export function AICommandPanel({ assistantName, onClose }: AICommandPanelProps) 
       setTimeout(() => {
         setIsRecording(false);
         setPrompt("Create a Facebook ad campaign for our summer sale");
-        toast({
-          title: "Voice input captured",
+        toast("Voice input captured", {
           description: "Text transcribed from your voice"
         });
       }, 3000);
     } else {
       // Stop recording
-      toast({
-        title: "Voice recording cancelled"
-      });
+      toast("Voice recording cancelled");
     }
   };
 
@@ -142,17 +137,15 @@ export function AICommandPanel({ assistantName, onClose }: AICommandPanelProps) 
               console.log("Approved"); 
               setResponse(null);
               setPrompt("");
-              toast({
-                title: "Command approved",
-                description: "The AI assistant will execute your request.",
+              toast("Command approved", {
+                description: "The AI assistant will execute your request."
               });
             }}
             onReject={() => {
               console.log("Rejected");
               setResponse(null);
-              toast({
-                title: "Command rejected",
-                description: "The request has been cancelled.",
+              toast("Command rejected", {
+                description: "The request has been cancelled."
               });
             }}
           />
