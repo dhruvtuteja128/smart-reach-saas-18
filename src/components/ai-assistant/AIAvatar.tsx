@@ -5,7 +5,7 @@ import {
   Bot, 
   Loader2, 
   AlertTriangle,
-  ZZZ
+  ZapOff
 } from "lucide-react";
 import { 
   Dialog,
@@ -62,7 +62,7 @@ export function AIAvatar({
       case "error":
         return <AlertTriangle className="h-6 w-6 text-primary-foreground" />;
       case "idle":
-        return <ZZZ className="h-6 w-6 text-primary-foreground" />;
+        return <ZapOff className="h-6 w-6 text-primary-foreground" />;
     }
   };
 
@@ -82,7 +82,7 @@ export function AIAvatar({
             {getStatusIcon()}
           </button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[550px] p-0" closeButton={false}>
+        <DialogContent className="sm:max-w-[550px] p-0">
           <AICommandPanel 
             assistantName={name} 
             onClose={() => setIsOpen(false)} 
