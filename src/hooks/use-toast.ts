@@ -1,8 +1,12 @@
 
-import { useToast } from "@/components/ui/toast";
+// Re-export the hook and components from our UI toast components
+import { type ToastActionElement, useToast as useToastUI } from "@/components/ui/toast";
 import { toast as sonnerToast } from "@/components/ui/sonner";
 
-// Modified to avoid naming conflicts while providing both toast options
-export { useToast };
-export const toast = useToast().toast;
-export { sonnerToast };
+export { type ToastActionElement };
+
+// Properly export the hook
+export const useToast = useToastUI;
+
+// Export the toast function for direct usage
+export const toast = sonnerToast;

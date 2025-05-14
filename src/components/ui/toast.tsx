@@ -132,6 +132,7 @@ type ToasterToast = ToastOptions & {
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+  onOpenChange?: (open: boolean) => void
 }
 
 const actionTypes = {
@@ -198,7 +199,7 @@ const reducer = (state: State, action: Action): State => {
           ...state,
           toasts: state.toasts.map((t) => ({
             ...t,
-            open: false,
+            onOpenChange: undefined,
           })),
         }
       }
@@ -209,7 +210,7 @@ const reducer = (state: State, action: Action): State => {
           t.id === toastId
             ? {
                 ...t,
-                open: false,
+                onOpenChange: undefined,
               }
             : t
         ),
@@ -245,6 +246,7 @@ function dispatch(action: Action) {
   })
 }
 
+// Ensure the hook is defined as a function
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 
@@ -275,7 +277,6 @@ function useToast() {
         toast: {
           ...props,
           id,
-          open: true,
           onOpenChange: (open: boolean) => {
             if (!open) dismiss()
           },
