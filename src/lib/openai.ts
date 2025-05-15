@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 import { formatAIError } from "@/lib/utils";
 
@@ -7,7 +6,7 @@ const OPENAI_API_KEY = "sk-proj-CfsDg-plZGIuRELs-QSVKnZgpgikY9eEW8ftJoVjBdBWXbkC
 const OPENAI_API_URL = "https://api.openai.com/v1";
 
 // Default model - use the latest available
-export const DEFAULT_MODEL = "gpt-4o";
+export const DEFAULT_MODEL = "gpt-4o-mini";
 
 // Error message for API failures
 export const API_ERROR_MESSAGE = "AI is currently unavailable. Please try again shortly.";
@@ -46,6 +45,8 @@ export async function callOpenAI(
   temperature: number = 0.7,
   max_tokens: number = 1000
 ): Promise<string | null> {
+  console.log("Calling OpenAI API with messages:", messages);
+  
   try {
     const response = await fetch(`${OPENAI_API_URL}/chat/completions`, {
       method: "POST",
@@ -61,6 +62,8 @@ export async function callOpenAI(
       }),
     });
 
+    console.log("OpenAI API response status:", response.status);
+
     if (!response.ok) {
       const errorData = await response.json();
       console.error("OpenAI API Error:", errorData);
@@ -68,6 +71,8 @@ export async function callOpenAI(
     }
 
     const data = await response.json();
+    console.log("OpenAI API response data:", data);
+    
     return data.choices[0].message.content;
   } catch (error) {
     console.error("Error calling OpenAI:", error);
@@ -80,6 +85,7 @@ export async function callOpenAI(
  */
 export async function validateAPIKey(): Promise<boolean> {
   try {
+    console.log("Validating API key by calling models endpoint");
     const response = await fetch(`${OPENAI_API_URL}/models`, {
       headers: {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
@@ -100,62 +106,6 @@ export async function validateAPIKey(): Promise<boolean> {
 }
 
 /**
- * Generate campaign content based on parameters
- */
-export async function generateCampaignContent(
-  campaignType: string,
-  goal: string,
-  audience: string,
-  tone: string = "professional"
-): Promise<{ subject?: string; content: string } | null> {
-  const prompt = `Create a ${campaignType} campaign with the following details:
-  - Goal: ${goal}
-  - Target Audience: ${audience}
-  - Tone: ${tone}
-  ${campaignType === "email" ? "Include a subject line and main content." : ""}
-  ${campaignType === "ads" ? "Include a headline and main ad copy." : ""}
-  ${campaignType === "sms" || campaignType === "whatsapp" ? "Keep it concise and under 160 characters." : ""}`;
-
-  const messages: OpenAIMessage[] = [
-    {
-      role: "system",
-      content: `You are an expert marketing copywriter specialized in creating ${campaignType} campaigns. You produce high-converting, engaging content that follows best practices for the specific channel. ${campaignType === "email" || campaignType === "ads" ? "Format the response with 'Subject:' or 'Headline:' on the first line, followed by the main content." : ""}`,
-    },
-    { role: "user", content: prompt },
-  ];
-
-  try {
-    const completion = await callOpenAI(messages);
-    
-    if (!completion) {
-      toast({
-        description: API_ERROR_MESSAGE,
-        variant: "destructive",
-      });
-      return null;
-    }
-
-    // Parse the response based on campaign type
-    if (campaignType === "email" || campaignType === "ads") {
-      const lines = completion.split("\n");
-      const subject = lines[0].replace(/Subject:|Headline:/i, "").trim();
-      const content = lines.slice(1).join("\n").trim();
-      
-      return { subject, content };
-    } else {
-      return { content: completion };
-    }
-  } catch (error) {
-    console.error("Error generating campaign content:", error);
-    toast({
-      description: API_ERROR_MESSAGE,
-      variant: "destructive",
-    });
-    return null;
-  }
-}
-
-/**
  * Generate a response for the AI assistant
  */
 export async function generateAssistantResponse(
@@ -167,59 +117,79 @@ export async function generateAssistantResponse(
   actions?: { label: string; action: string }[];
 } | null> {
   try {
-    // Create a context-aware system message
-    const systemMessage = {
-      role: "system" as const,
-      content: `You are an AI marketing assistant named AIDA. You help marketers create campaigns, analyze data, and optimize their marketing efforts. ${
-        selectedTool
-          ? `The user is currently using the "${selectedTool}" tool. Focus your response on this specific task.`
-          : ""
-      }
+    // Create a context-aware system message if not already present
+    if (!messages.some(msg => msg.role === "system")) {
+      const systemMessage: OpenAIMessage = {
+        role: "system",
+        content: `You are AIDA, an AI marketing assistant. You help marketers create campaigns, analyze data, and optimize their marketing efforts. ${
+          selectedTool
+            ? `The user is currently using the "${selectedTool}" tool. Focus your response on this specific task.`
+            : ""
+        }
+        
+        Be helpful, concise, and practical. When appropriate, suggest specific actions the user can take.
+        
+        Detect the user's intent to provide the most relevant assistance.`
+      };
       
-      Detect the user's intent and provide a helpful response. When appropriate, suggest actions the user can take.
-      
-      Your response should be formatted as follows:
-      CONTENT: Your detailed response here.
-      INTENT: A single word describing the user's intent (e.g., campaign, workflow, analytics, copywriting)
-      ACTIONS: Comma-separated list of actions in format "label:action" (e.g., "View Campaign:view, Edit Content:edit")`,
-    };
-
-    // Add the system message at the beginning
-    const messagesWithSystem = [systemMessage, ...messages];
+      // Add the system message at the beginning
+      messages = [systemMessage, ...messages];
+    }
     
-    const completion = await callOpenAI(messagesWithSystem);
+    console.log("Generating assistant response with messages:", messages);
+    
+    const completion = await callOpenAI(messages);
     
     if (!completion) {
+      console.error("No completion returned from OpenAI");
       return null;
     }
     
-    // Parse the structured response
-    let content = completion;
+    console.log("Received completion:", completion);
+    
+    // Parse the response to identify intent and actions
     let intent: string | undefined;
     let actions: { label: string; action: string }[] | undefined;
     
-    // Try to parse structured format if present
-    const contentMatch = completion.match(/CONTENT:(.*?)(?=INTENT:|$)/s);
-    const intentMatch = completion.match(/INTENT:(.*?)(?=ACTIONS:|$)/s);
-    const actionsMatch = completion.match(/ACTIONS:(.*?)$/s);
+    // Simple intent detection based on content
+    const lowerContent = completion.toLowerCase();
     
-    if (contentMatch) {
-      content = contentMatch[1].trim();
-      
-      if (intentMatch) {
-        intent = intentMatch[1].trim();
-      }
-      
-      if (actionsMatch) {
-        const actionsList = actionsMatch[1].trim();
-        actions = actionsList.split(",").map(item => {
-          const [label, action] = item.split(":");
-          return { label: label.trim(), action: action.trim() };
-        });
-      }
+    if (lowerContent.includes("campaign") || lowerContent.includes("email")) {
+      intent = "campaign";
+      actions = [
+        { label: "View Campaign", action: "view" },
+        { label: "Edit Content", action: "edit" },
+        { label: "Schedule", action: "schedule" }
+      ];
+    } 
+    else if (lowerContent.includes("workflow") || lowerContent.includes("automation")) {
+      intent = "workflow";
+      actions = [
+        { label: "View Workflow", action: "view" },
+        { label: "Edit Steps", action: "edit" },
+        { label: "Activate", action: "activate" }
+      ];
+    }
+    else if (lowerContent.includes("analytics") || lowerContent.includes("performance")) {
+      intent = "analytics";
+      actions = [
+        { label: "View Full Report", action: "report" },
+        { label: "Export Data", action: "export" },
+      ];
+    }
+    else if (lowerContent.includes("copy") || lowerContent.includes("write") || lowerContent.includes("headline")) {
+      intent = "copywriting";
+      actions = [
+        { label: "Copy to Clipboard", action: "copy" },
+        { label: "Generate More", action: "more" },
+      ];
     }
     
-    return { content, intent, actions };
+    return { 
+      content: completion,
+      intent,
+      actions
+    };
   } catch (error) {
     console.error("Error generating assistant response:", formatAIError(error));
     return null;

@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { 
   Send, 
@@ -22,6 +21,8 @@ import { AIMessage } from "./AIMessage";
 import { SuggestedPrompts } from "./SuggestedPrompts";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { generateAssistantResponse, OpenAIMessage } from "@/lib/openai";
+import { useOpenAI } from "@/contexts/OpenAIContext";
 
 interface Message {
   id: string;
@@ -70,70 +71,6 @@ const sampleConversationHistory: AIHistoryItem[] = [
   }
 ];
 
-interface AIResponse {
-  content: string;
-  intent?: string;
-  actions?: {
-    label: string;
-    action: string;
-  }[];
-}
-
-// Mock function to simulate AI response
-const mockAIResponse = async (message: string): Promise<AIResponse> => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  const lowerMsg = message.toLowerCase();
-  
-  // Intent detection based on input
-  let intent: string | undefined;
-  let actions: {label: string, action: string}[] = [];
-  let content = "";
-  
-  if (lowerMsg.includes("campaign") || lowerMsg.includes("email")) {
-    intent = "campaign";
-    content = "I've created a draft email campaign based on your request. It includes a responsive design with a clear call-to-action that aligns with your brand guidelines.";
-    actions = [
-      { label: "View Campaign", action: "view" },
-      { label: "Edit Content", action: "edit" },
-      { label: "Schedule", action: "schedule" }
-    ];
-  } 
-  else if (lowerMsg.includes("workflow") || lowerMsg.includes("automation")) {
-    intent = "workflow";
-    content = "I've designed a workflow automation with the following steps: trigger on website visit, wait 24 hours, send email follow-up, and tag contacts who click as 'interested'.";
-    actions = [
-      { label: "View Workflow", action: "view" },
-      { label: "Edit Steps", action: "edit" },
-      { label: "Activate", action: "activate" }
-    ];
-  }
-  else if (lowerMsg.includes("analytics") || lowerMsg.includes("performance")) {
-    intent = "analytics";
-    content = "Based on your recent campaign performance, I can see that your open rates are 24% (3% above industry average), but click-through rates are 1.8% (0.7% below average). Your best performing segment is 'loyal customers' with a 32% open rate.";
-    actions = [
-      { label: "View Full Report", action: "report" },
-      { label: "Export Data", action: "export" },
-    ];
-  }
-  else if (lowerMsg.includes("copy") || lowerMsg.includes("write") || lowerMsg.includes("headline")) {
-    intent = "copywriting";
-    content = "Here are 3 headline options for your promotion:\n\n1. \"Transform Your Marketing: 50% Off Premium Features Today\"\n\n2. \"Unlock Growth: Limited-Time Marketing Suite Offer\"\n\n3. \"Boost Results in Half the Time: Special Promo Inside\"";
-    actions = [
-      { label: "Copy to Clipboard", action: "copy" },
-      { label: "Generate More", action: "more" },
-      { label: "Use in Campaign", action: "use" }
-    ];
-  }
-  else {
-    // Default response
-    content = "I'm your AI marketing assistant. I can help you create campaigns, design workflows, analyze data, generate copy, and more. What would you like assistance with today?";
-  }
-  
-  return { content, intent, actions };
-};
-
 interface AIChatProps {
   smartMode: boolean;
 }
@@ -146,6 +83,7 @@ export function AIChat({ smartMode }: AIChatProps) {
   const [showHistory, setShowHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { isApiAvailable, isApiKeyValid } = useOpenAI();
 
   // Add initial greeting message when component mounts
   useEffect(() => {
@@ -180,7 +118,31 @@ export function AIChat({ smartMode }: AIChatProps) {
     setIsLoading(true);
     
     try {
-      const aiResponse = await mockAIResponse(inputValue);
+      // Check if OpenAI API is available
+      if (!isApiAvailable || !isApiKeyValid) {
+        throw new Error("OpenAI API is not available");
+      }
+      
+      // Convert recent messages to OpenAI format for context
+      const openAIMessages: OpenAIMessage[] = messages
+        .slice(-5) // Only use last 5 messages for context
+        .map(msg => ({
+          role: msg.role,
+          content: msg.content
+        }));
+      
+      // Add user's current message
+      openAIMessages.push({
+        role: "user",
+        content: userMessage.content
+      });
+      
+      // Get response from OpenAI
+      const aiResponse = await generateAssistantResponse(openAIMessages);
+      
+      if (!aiResponse) {
+        throw new Error("Failed to generate AI response");
+      }
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -193,11 +155,17 @@ export function AIChat({ smartMode }: AIChatProps) {
       
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      // Handle error
-      toast({
-        title: "Error",
-        description: "Sorry, I couldn't process your request. Please try again."
-      });
+      console.error("Error processing message:", error);
+      
+      // Fallback response for testing
+      const fallbackResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "I'm sorry, I couldn't process your request. Let me help you with that. What specifically would you like to know about marketing campaigns?",
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, fallbackResponse]);
     } finally {
       setIsLoading(false);
     }

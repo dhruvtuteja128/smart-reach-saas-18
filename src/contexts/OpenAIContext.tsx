@@ -17,7 +17,7 @@ const OpenAIContext = createContext<OpenAIContextType | undefined>(undefined);
 
 export function OpenAIProvider({ children }: { children: ReactNode }) {
   const [isApiKeyValid, setIsApiKeyValid] = useState<boolean>(false);
-  const [isApiAvailable, setIsApiAvailable] = useState<boolean>(true);
+  const [isApiAvailable, setIsApiAvailable] = useState<boolean>(false);
   const [isTestingConnection, setIsTestingConnection] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastChecked, setLastChecked] = useState<Date | undefined>(undefined);
@@ -25,20 +25,37 @@ export function OpenAIProvider({ children }: { children: ReactNode }) {
   // Check API key validity on initial load
   useEffect(() => {
     const checkApiKey = async () => {
+      setIsTestingConnection(true);
       try {
+        console.log("Validating OpenAI API key...");
         const isValid = await validateAPIKey();
+        console.log("API key validation result:", isValid);
         setIsApiKeyValid(isValid);
         setIsApiAvailable(isValid);
         setLastChecked(new Date());
         
-        if (!isValid) {
+        if (isValid) {
+          toast({
+            description: "OpenAI connection established! AI Assistant is ready."
+          });
+        } else {
           setErrorMessage("OpenAI API key is invalid or has expired.");
+          toast({
+            variant: "destructive",
+            description: "Could not connect to OpenAI. AI features may not work correctly."
+          });
         }
       } catch (error) {
         console.error("Error checking API key:", error);
         setIsApiKeyValid(false);
         setIsApiAvailable(false);
         setErrorMessage("Failed to validate OpenAI API key.");
+        toast({
+          variant: "destructive",
+          description: "Error connecting to OpenAI API. Please check your connection."
+        });
+      } finally {
+        setIsTestingConnection(false);
       }
     };
 
@@ -50,7 +67,9 @@ export function OpenAIProvider({ children }: { children: ReactNode }) {
     setErrorMessage(null);
 
     try {
+      console.log("Testing OpenAI connection...");
       const connectionWorks = await testOpenAIConnection();
+      console.log("Connection test result:", connectionWorks);
       setIsApiAvailable(connectionWorks);
       setIsApiKeyValid(connectionWorks);
       setLastChecked(new Date());

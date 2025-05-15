@@ -34,7 +34,7 @@ import { generateAssistantResponse, OpenAIMessage, API_ERROR_MESSAGE, processVoi
 
 interface Message {
   id: string;
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
   timestamp: Date;
   intent?: string;
@@ -62,7 +62,7 @@ export function AIAssistantInterface({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { isApiAvailable, isApiKeyValid } = useOpenAI();
+  const { isApiAvailable, isApiKeyValid, testConnection } = useOpenAI();
 
   // Add initial greeting message when component mounts
   useEffect(() => {
@@ -73,6 +73,15 @@ export function AIAssistantInterface({
       timestamp: new Date(),
     };
     setMessages([initialMessage]);
+    
+    // Test OpenAI connection on load
+    const checkConnection = async () => {
+      if (!isApiKeyValid) {
+        await testConnection();
+      }
+    };
+    
+    checkConnection();
   }, []);
 
   // Scroll to bottom of messages
@@ -106,9 +115,17 @@ export function AIAssistantInterface({
       const openAIMessages: OpenAIMessage[] = messages
         .slice(-10) // Only use last 10 messages for context
         .map(msg => ({
-          role: msg.role as "user" | "assistant",
+          role: msg.role as "user" | "assistant" | "system",
           content: msg.content
         }));
+      
+      // Add system message if using a specific tool
+      if (selectedTool) {
+        openAIMessages.unshift({
+          role: "system",
+          content: `You are a marketing assistant specialized in ${selectedTool}. Focus your responses on this specific area.`
+        });
+      }
       
       // Add user's current message
       openAIMessages.push({
@@ -116,8 +133,12 @@ export function AIAssistantInterface({
         content: userMessage.content
       });
       
+      console.log("Sending to OpenAI:", openAIMessages);
+      
       // Get response from OpenAI
       const aiResponse = await generateAssistantResponse(openAIMessages, selectedTool || undefined);
+      
+      console.log("Received from OpenAI:", aiResponse);
       
       if (!aiResponse) {
         throw new Error("Failed to generate AI response");
@@ -146,6 +167,17 @@ export function AIAssistantInterface({
       }
     } catch (error) {
       console.error("Error processing message:", error);
+      
+      // Fallback response if API fails
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "I'm sorry, I couldn't process your request at the moment. Let me help you with that when my connection is restored. What specifically would you like assistance with?",
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, assistantMessage]);
+      
       toast({
         variant: "destructive",
         description: API_ERROR_MESSAGE
@@ -257,7 +289,6 @@ export function AIAssistantInterface({
         });
         break;
       case "copy":
-        // In a real app, you would need to extract the text to copy
         navigator.clipboard.writeText("Sample text copied to clipboard");
         toast({
           description: "Copied to clipboard!"

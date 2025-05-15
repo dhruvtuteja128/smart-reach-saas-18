@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Mic, Send, X, Bot, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { AICommandResponse } from "./AICommandResponse";
 import { toast } from "@/hooks/use-toast";
+import { generateAssistantResponse, OpenAIMessage } from "@/lib/openai";
+import { useOpenAI } from "@/contexts/OpenAIContext";
 
 interface AICommandPanelProps {
   assistantName: string;
@@ -29,6 +30,7 @@ export function AICommandPanel({ assistantName, onClose }: AICommandPanelProps) 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [recordingTime, setRecordingTime] = useState(0);
   const recordingInterval = useRef<NodeJS.Timeout | null>(null);
+  const { isApiAvailable, isApiKeyValid } = useOpenAI();
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -56,16 +58,45 @@ export function AICommandPanel({ assistantName, onClose }: AICommandPanelProps) 
     };
   }, [isRecording]);
 
-  const handleSend = () => {
-    if (!prompt.trim()) return;
+  const handleSend = async () => {
+    if (!prompt.trim() || isLoading) return;
     
     setIsLoading(true);
     
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Check if OpenAI API is available
+      if (!isApiAvailable || !isApiKeyValid) {
+        throw new Error("OpenAI API is not available");
+      }
+      
+      // Prepare messages for OpenAI
+      const messages: OpenAIMessage[] = [
+        {
+          role: "system",
+          content: `You are a helpful marketing assistant named ${assistantName}. Provide concise and practical advice for marketing tasks.`
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ];
+      
+      // Get response from OpenAI
+      const aiResponse = await generateAssistantResponse(messages);
+      
+      if (!aiResponse) {
+        throw new Error("Failed to generate AI response");
+      }
+      
+      setResponse(aiResponse.content);
+    } catch (error) {
+      console.error("Error processing command:", error);
+      
+      // Fallback response
       setResponse(`Here's my response to "${prompt}". I've analyzed your request and prepared some suggestions based on your marketing data.`);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
