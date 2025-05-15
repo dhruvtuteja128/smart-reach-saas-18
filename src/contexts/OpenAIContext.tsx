@@ -10,6 +10,7 @@ interface OpenAIContextType {
   testConnection: () => Promise<boolean>;
   errorMessage: string | null;
   resetErrorState: () => void;
+  lastChecked?: Date;
 }
 
 const OpenAIContext = createContext<OpenAIContextType | undefined>(undefined);
@@ -19,6 +20,7 @@ export function OpenAIProvider({ children }: { children: ReactNode }) {
   const [isApiAvailable, setIsApiAvailable] = useState<boolean>(true);
   const [isTestingConnection, setIsTestingConnection] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [lastChecked, setLastChecked] = useState<Date | undefined>(undefined);
 
   // Check API key validity on initial load
   useEffect(() => {
@@ -26,12 +28,16 @@ export function OpenAIProvider({ children }: { children: ReactNode }) {
       try {
         const isValid = await validateAPIKey();
         setIsApiKeyValid(isValid);
+        setIsApiAvailable(isValid);
+        setLastChecked(new Date());
+        
         if (!isValid) {
           setErrorMessage("OpenAI API key is invalid or has expired.");
         }
       } catch (error) {
         console.error("Error checking API key:", error);
         setIsApiKeyValid(false);
+        setIsApiAvailable(false);
         setErrorMessage("Failed to validate OpenAI API key.");
       }
     };
@@ -47,6 +53,7 @@ export function OpenAIProvider({ children }: { children: ReactNode }) {
       const connectionWorks = await testOpenAIConnection();
       setIsApiAvailable(connectionWorks);
       setIsApiKeyValid(connectionWorks);
+      setLastChecked(new Date());
 
       if (connectionWorks) {
         toast({
@@ -88,6 +95,7 @@ export function OpenAIProvider({ children }: { children: ReactNode }) {
         testConnection,
         errorMessage,
         resetErrorState,
+        lastChecked,
       }}
     >
       {children}

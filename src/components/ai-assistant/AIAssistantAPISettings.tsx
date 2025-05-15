@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,14 +5,27 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
-import { Loader, Check, XCircle, AlertTriangle, Terminal, Shield } from "lucide-react";
+import { Loader, Check, XCircle, AlertTriangle, Terminal, Shield, Clock } from "lucide-react";
 import { useOpenAI } from "@/contexts/OpenAIContext";
 import { DEFAULT_MODEL } from "@/lib/openai";
 
 export function AIAssistantAPISettings() {
-  const { isApiKeyValid, isApiAvailable, isTestingConnection, testConnection, errorMessage } = useOpenAI();
+  const { isApiKeyValid, isApiAvailable, isTestingConnection, testConnection, errorMessage, lastChecked } = useOpenAI();
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKeyValue, setApiKeyValue] = useState("sk-proj-**************************************************");
+
+  const formatLastChecked = () => {
+    if (!lastChecked) return "Never";
+    
+    // If checked today, show time
+    const now = new Date();
+    if (lastChecked.toDateString() === now.toDateString()) {
+      return `Today at ${lastChecked.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    
+    // Otherwise show date
+    return lastChecked.toLocaleDateString();
+  };
 
   return (
     <Card className="w-full">
@@ -75,6 +87,17 @@ export function AIAssistantAPISettings() {
           <p className="text-xs text-muted-foreground">
             Using the latest OpenAI model for optimal performance.
           </p>
+        </div>
+
+        <div className="flex justify-between items-center text-sm">
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            <span>Last checked: {formatLastChecked()}</span>
+          </div>
+          
+          <div className={`px-2 py-1 rounded-full text-xs ${isApiAvailable ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}>
+            {isApiAvailable ? "Active" : "Inactive"}
+          </div>
         </div>
 
         <div className="space-y-2 border p-3 rounded-md bg-muted/30">

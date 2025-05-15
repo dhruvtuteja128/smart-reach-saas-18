@@ -1,10 +1,13 @@
 
 import { Layout } from "@/components/Layout";
 import { CampaignEditor } from "@/components/campaigns/CampaignEditor";
+import { OpenAIProvider } from "@/contexts/OpenAIContext";
 
 const CampaignEditorPage = () => (
   <Layout>
-    <CampaignEditor />
+    <OpenAIProvider>
+      <CampaignEditor />
+    </OpenAIProvider>
   </Layout>
 );
 

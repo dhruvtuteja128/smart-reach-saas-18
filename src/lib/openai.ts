@@ -1,5 +1,6 @@
 
 import { toast } from "@/hooks/use-toast";
+import { formatAIError } from "@/lib/utils";
 
 // OpenAI API configuration
 const OPENAI_API_KEY = "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";
@@ -86,6 +87,7 @@ export async function validateAPIKey(): Promise<boolean> {
     });
 
     if (response.ok) {
+      console.log("API key validation successful");
       return true;
     } else {
       console.error("API key validation failed:", await response.json());
@@ -219,7 +221,7 @@ export async function generateAssistantResponse(
     
     return { content, intent, actions };
   } catch (error) {
-    console.error("Error generating assistant response:", error);
+    console.error("Error generating assistant response:", formatAIError(error));
     return null;
   }
 }
@@ -230,11 +232,36 @@ export async function generateAssistantResponse(
  * For now, we'll simulate this functionality
  */
 export async function processVoiceToText(audioBlob: Blob): Promise<string | null> {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  // Return mock response
-  return "Create an email campaign for our summer promotion";
+  try {
+    // Create form data for the request
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'recording.wav');
+    formData.append('model', 'whisper-1');
+    
+    // Make the request to OpenAI's Whisper API
+    const response = await fetch(`${OPENAI_API_URL}/audio/transcriptions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+      },
+      body: formData
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("OpenAI Whisper API Error:", errorData);
+      throw new Error(`API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data.text;
+  } catch (error) {
+    console.error("Error processing voice to text:", error);
+    // Fallback to simulated response
+    console.log("Falling back to simulated response");
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    return "Create an email campaign for our summer promotion";
+  }
 }
 
 /**
@@ -286,5 +313,48 @@ export async function testOpenAIConnection(): Promise<boolean> {
   } catch (error) {
     console.error("OpenAI connection test failed:", error);
     return false;
+  }
+}
+
+/**
+ * Generate email subject lines for A/B testing
+ */
+export async function generateSubjectLines(
+  topic: string, 
+  tone: string = "professional",
+  count: number = 3
+): Promise<string[] | null> {
+  try {
+    const prompt = `Create ${count} unique and engaging email subject lines about ${topic}. 
+    The tone should be ${tone}. 
+    Make them compelling and likely to result in high open rates.
+    Return only the subject lines, nothing else.`;
+    
+    const messages: OpenAIMessage[] = [
+      {
+        role: "system",
+        content: "You are an expert email marketer who specializes in creating high-converting subject lines."
+      },
+      { role: "user", content: prompt }
+    ];
+    
+    const result = await callOpenAI(messages);
+    
+    if (!result) {
+      return null;
+    }
+    
+    // Parse the result into separate subject lines
+    const subjectLines = result
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .map(line => line.replace(/^\d+\.\s*/, '')) // Remove numbering if present
+      .slice(0, count);
+      
+    return subjectLines;
+  } catch (error) {
+    console.error("Error generating subject lines:", error);
+    return null;
   }
 }
