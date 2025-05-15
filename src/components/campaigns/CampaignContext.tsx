@@ -1,85 +1,45 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
-import { MessageChannel } from "@/types/communication";
-
-export type CampaignType = "email" | "sms" | "whatsapp" | "ads";
-export type AutomationTiming = "now" | "scheduled" | "recurring";
 
 export interface CampaignState {
+  id: string | null;
   name: string;
-  type: CampaignType | null;
-  audienceSegment: string | null;
-  audienceSize: number;
-  filters: Record<string, any>[];
-  message: {
-    subject?: string;
-    content: string;
-    mediaUrl?: string;
-    goal?: string;
-    aiOptimized: boolean;
-  };
-  automation: {
-    timing: AutomationTiming;
-    scheduledDate?: Date;
-    conditions: any[];
-  };
+  type: "email" | "sms" | "whatsapp" | "ads" | "";
+  audience: string; // Adding the audience property that was missing
+  content: string;
+  subject: string;
+  schedule: Date | null;
+  status: "draft" | "scheduled" | "running" | "completed" | "paused";
 }
 
 interface CampaignContextType {
   campaign: CampaignState;
-  updateCampaign: (updates: Partial<CampaignState>) => void;
-  updateMessage: (updates: Partial<CampaignState["message"]>) => void;
-  updateAutomation: (updates: Partial<CampaignState["automation"]>) => void;
-  resetCampaign: () => void;
+  setCampaign: (campaign: CampaignState) => void;
+  updateCampaign: (update: Partial<CampaignState>) => void;
 }
 
-const initialState: CampaignState = {
+const defaultCampaign: CampaignState = {
+  id: null,
   name: "",
-  type: null,
-  audienceSegment: null,
-  audienceSize: 0,
-  filters: [],
-  message: {
-    content: "",
-    aiOptimized: false,
-  },
-  automation: {
-    timing: "now",
-    conditions: [],
-  },
+  type: "",
+  audience: "", // Initialize with empty string
+  content: "",
+  subject: "",
+  schedule: null,
+  status: "draft",
 };
 
 const CampaignContext = createContext<CampaignContextType | undefined>(undefined);
 
 export const CampaignProvider = ({ children }: { children: ReactNode }) => {
-  const [campaign, setCampaign] = useState<CampaignState>(initialState);
+  const [campaign, setCampaign] = useState<CampaignState>(defaultCampaign);
 
-  const updateCampaign = (updates: Partial<CampaignState>) => {
-    setCampaign(prev => ({ ...prev, ...updates }));
-  };
-
-  const updateMessage = (updates: Partial<CampaignState["message"]>) => {
-    setCampaign(prev => ({
-      ...prev,
-      message: { ...prev.message, ...updates },
-    }));
-  };
-
-  const updateAutomation = (updates: Partial<CampaignState["automation"]>) => {
-    setCampaign(prev => ({
-      ...prev,
-      automation: { ...prev.automation, ...updates },
-    }));
-  };
-
-  const resetCampaign = () => {
-    setCampaign(initialState);
+  const updateCampaign = (update: Partial<CampaignState>) => {
+    setCampaign((prev) => ({ ...prev, ...update }));
   };
 
   return (
-    <CampaignContext.Provider
-      value={{ campaign, updateCampaign, updateMessage, updateAutomation, resetCampaign }}
-    >
+    <CampaignContext.Provider value={{ campaign, setCampaign, updateCampaign }}>
       {children}
     </CampaignContext.Provider>
   );
@@ -87,7 +47,7 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
 
 export const useCampaign = () => {
   const context = useContext(CampaignContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useCampaign must be used within a CampaignProvider");
   }
   return context;

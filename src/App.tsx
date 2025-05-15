@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Communication from "./pages/Communication";
 import Campaigns from "./pages/Campaigns";
@@ -28,25 +28,23 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/communication" element={<Communication />} />
-          <Route path="/campaigns" element={<CampaignsList />} />
-          <Route path="/campaigns/:id/view" element={<CampaignDetailPage />} />
-          <Route path="/campaigns/:id/edit" element={<CampaignEditorPage />} />
-          <Route path="/campaigns/:id/schedule" element={<CampaignSchedulerPage />} />
-          <Route path="/ai-campaign" element={<AICampaign />} />
-          <Route path="/crm" element={<CRM />} />
-          <Route path="/reviews" element={<Reviews />} />
-          <Route path="/workflows" element={<Workflows />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/assistant" element={<Assistant />} />
-          <Route path="/integrations" element={<Integrations />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/communication" element={<Communication />} />
+        <Route path="/campaigns" element={<CampaignsList />} />
+        <Route path="/campaigns/:id/view" element={<CampaignDetailPage />} />
+        <Route path="/campaigns/:id/edit" element={<CampaignEditorPage />} />
+        <Route path="/campaigns/:id/schedule" element={<CampaignSchedulerPage />} />
+        <Route path="/ai-campaign" element={<AICampaign />} />
+        <Route path="/crm" element={<CRM />} />
+        <Route path="/reviews" element={<Reviews />} />
+        <Route path="/workflows" element={<Workflows />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/assistant" element={<Assistant />} />
+        <Route path="/integrations" element={<Integrations />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </TooltipProvider>
   </QueryClientProvider>
 );

@@ -11,7 +11,7 @@ import { OpenAIProvider } from './contexts/OpenAIContext.tsx'
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <ThemeProvider defaultTheme="light" storageKey="ui-theme">
+      <ThemeProvider defaultTheme="light">
         <OpenAIProvider>
           <App />
           <Toaster />
