@@ -1,10 +1,13 @@
 
 import { useState } from "react";
 import { Mail, MessageCircle, Phone, BarChart3 } from "lucide-react";
-import { useCampaign, CampaignType as CampaignTypeEnum } from "@/components/campaigns/CampaignContext";
+import { useCampaign } from "@/components/campaigns/CampaignContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+// Define the type directly here since we're using it for component props
+type CampaignTypeEnum = "email" | "sms" | "whatsapp" | "ads" | "";
 
 export const CampaignType = () => {
   const { campaign, updateCampaign } = useCampaign();

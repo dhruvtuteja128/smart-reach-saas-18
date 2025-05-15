@@ -47,7 +47,7 @@ export const CampaignMessage = () => {
       const result = await generateCampaignContent(
         campaign.type,
         goal,
-        campaign.audience?.name || "general audience",
+        campaign.audience || "general audience", // Fix here - campaign.audience is a string
         "professional"
       );
       
