@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   FileText, 
@@ -25,6 +24,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 type CampaignStatus = "draft" | "in-progress" | "approved" | "rejected";
 
@@ -169,7 +169,19 @@ export function AssistantCampaigns() {
         toast({
           description: `Editing campaign: ${campaign.title}`
         });
-        navigate(`/ai-campaign?id=${campaignId}`);
+        navigate(`/campaigns/${campaignId}/edit`);
+        break;
+      case "view":
+        toast({
+          description: `Viewing campaign: ${campaign.title}`
+        });
+        navigate(`/campaigns/${campaignId}/view`);
+        break;
+      case "schedule":
+        toast({
+          description: `Scheduling campaign: ${campaign.title}`
+        });
+        navigate(`/campaigns/${campaignId}/schedule`);
         break;
       case "approve":
         toast({

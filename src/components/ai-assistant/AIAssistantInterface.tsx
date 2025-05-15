@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { 
   Send, 
@@ -28,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AIToolSelector } from "./AIToolSelector";
 import { AIAssistantProfile } from "./AIAssistantProfile";
 import { SuggestedPrompts } from "./SuggestedPrompts";
+import { useNavigate } from "react-router-dom"; // Add this import
 
 interface Message {
   id: string;
@@ -113,6 +113,7 @@ export function AIAssistantInterface({
   const [voiceMode, setVoiceMode] = useState<"text" | "voice" | "hybrid">("text");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Add initial greeting message when component mounts
   useEffect(() => {
@@ -431,7 +432,7 @@ export function AIAssistantInterface({
         {/* Voice waveform (shown when recording or in voice mode) */}
         {isRecording && (
           <div className="p-4 border-t bg-muted/20">
-            <AIVoiceWaveform />
+            <AIVoiceWaveform playing={true} />
           </div>
         )}
         

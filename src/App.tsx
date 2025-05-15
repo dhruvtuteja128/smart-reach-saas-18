@@ -7,6 +7,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Communication from "./pages/Communication";
 import Campaigns from "./pages/Campaigns";
+import CampaignsList from "./pages/CampaignsList";
+import CampaignDetailPage from "./pages/CampaignDetailPage";
+import CampaignEditorPage from "./pages/CampaignEditorPage";
+import CampaignSchedulerPage from "./pages/CampaignSchedulerPage";
 import CRM from "./pages/CRM";
 import Reviews from "./pages/Reviews";
 import Workflows from "./pages/Workflows";
@@ -28,7 +32,10 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/communication" element={<Communication />} />
-          <Route path="/campaigns" element={<Campaigns />} />
+          <Route path="/campaigns" element={<CampaignsList />} />
+          <Route path="/campaigns/:id/view" element={<CampaignDetailPage />} />
+          <Route path="/campaigns/:id/edit" element={<CampaignEditorPage />} />
+          <Route path="/campaigns/:id/schedule" element={<CampaignSchedulerPage />} />
           <Route path="/ai-campaign" element={<AICampaign />} />
           <Route path="/crm" element={<CRM />} />
           <Route path="/reviews" element={<Reviews />} />
