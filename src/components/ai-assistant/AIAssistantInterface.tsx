@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { 
   Send, 
@@ -27,7 +28,9 @@ import { useToast } from "@/hooks/use-toast";
 import { AIToolSelector } from "./AIToolSelector";
 import { AIAssistantProfile } from "./AIAssistantProfile";
 import { SuggestedPrompts } from "./SuggestedPrompts";
-import { useNavigate } from "react-router-dom"; // Add this import
+import { useNavigate } from "react-router-dom";
+import { useOpenAI } from "@/contexts/OpenAIContext";
+import { generateAssistantResponse, OpenAIMessage, API_ERROR_MESSAGE, processVoiceToText } from "@/lib/openai";
 
 interface Message {
   id: string;
@@ -40,61 +43,6 @@ interface Message {
     action: string;
   }[];
 }
-
-// Mock function to simulate AI response
-const mockAIResponse = async (message: string, selectedTool?: string): Promise<Partial<Message>> => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  const lowerMsg = message.toLowerCase();
-  
-  // Intent detection based on input
-  let intent: string | undefined;
-  let actions: {label: string, action: string}[] = [];
-  let content = "";
-  
-  if (selectedTool === "write-campaign" || lowerMsg.includes("campaign") || lowerMsg.includes("email")) {
-    intent = "campaign";
-    content = "I've created a draft email campaign based on your request. It includes a responsive design with a clear call-to-action that aligns with your brand guidelines.";
-    actions = [
-      { label: "View Campaign", action: "view" },
-      { label: "Edit Content", action: "edit" },
-      { label: "Schedule", action: "schedule" }
-    ];
-  } 
-  else if (selectedTool === "create-workflow" || lowerMsg.includes("workflow") || lowerMsg.includes("automation")) {
-    intent = "workflow";
-    content = "I've designed a workflow automation with the following steps: trigger on website visit, wait 24 hours, send email follow-up, and tag contacts who click as 'interested'.";
-    actions = [
-      { label: "View Workflow", action: "view" },
-      { label: "Edit Steps", action: "edit" },
-      { label: "Activate", action: "activate" }
-    ];
-  }
-  else if (selectedTool === "analyze-data" || lowerMsg.includes("analytics") || lowerMsg.includes("performance")) {
-    intent = "analytics";
-    content = "Based on your recent campaign performance, I can see that your open rates are 24% (3% above industry average), but click-through rates are 1.8% (0.7% below average). Your best performing segment is 'loyal customers' with a 32% open rate.";
-    actions = [
-      { label: "View Full Report", action: "report" },
-      { label: "Export Data", action: "export" },
-    ];
-  }
-  else if (selectedTool === "write-copy" || lowerMsg.includes("copy") || lowerMsg.includes("write") || lowerMsg.includes("headline")) {
-    intent = "copywriting";
-    content = "Here are 3 headline options for your promotion:\n\n1. \"Transform Your Marketing: 50% Off Premium Features Today\"\n\n2. \"Unlock Growth: Limited-Time Marketing Suite Offer\"\n\n3. \"Boost Results in Half the Time: Special Promo Inside\"";
-    actions = [
-      { label: "Copy to Clipboard", action: "copy" },
-      { label: "Generate More", action: "more" },
-      { label: "Use in Campaign", action: "use" }
-    ];
-  }
-  else {
-    // Default response
-    content = "I'm your AI marketing assistant. I can help you create campaigns, design workflows, analyze data, generate copy, and more. What would you like assistance with today?";
-  }
-  
-  return { content, intent, actions, timestamp: new Date(), role: "assistant" };
-};
 
 interface AIAssistantInterfaceProps {
   autoActionsEnabled: boolean;
@@ -114,6 +62,7 @@ export function AIAssistantInterface({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { isApiAvailable, isApiKeyValid } = useOpenAI();
 
   // Add initial greeting message when component mounts
   useEffect(() => {
@@ -148,12 +97,36 @@ export function AIAssistantInterface({
     setIsLoading(true);
     
     try {
-      const aiResponse = await mockAIResponse(inputValue, selectedTool || undefined);
+      // Check if OpenAI API is available
+      if (!isApiAvailable || !isApiKeyValid) {
+        throw new Error("OpenAI API is not available");
+      }
+      
+      // Convert messages to OpenAI format
+      const openAIMessages: OpenAIMessage[] = messages
+        .slice(-10) // Only use last 10 messages for context
+        .map(msg => ({
+          role: msg.role as "user" | "assistant",
+          content: msg.content
+        }));
+      
+      // Add user's current message
+      openAIMessages.push({
+        role: "user",
+        content: userMessage.content
+      });
+      
+      // Get response from OpenAI
+      const aiResponse = await generateAssistantResponse(openAIMessages, selectedTool || undefined);
+      
+      if (!aiResponse) {
+        throw new Error("Failed to generate AI response");
+      }
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: aiResponse.content || "",
+        content: aiResponse.content,
         timestamp: new Date(),
         intent: aiResponse.intent,
         actions: aiResponse.actions
@@ -168,14 +141,14 @@ export function AIAssistantInterface({
           description: `Auto-executing: ${firstAction.label}`
         });
         
-        // Here would be the logic to actually execute the action
-        // For demo purposes, we'll just log it
-        console.log("Auto-executing action:", firstAction);
+        // Execute the action
+        handleActionClick(firstAction.action);
       }
     } catch (error) {
+      console.error("Error processing message:", error);
       toast({
         variant: "destructive",
-        description: "Sorry, I couldn't process your request. Please try again."
+        description: API_ERROR_MESSAGE
       });
     } finally {
       setIsLoading(false);
@@ -189,24 +162,48 @@ export function AIAssistantInterface({
     }
   };
 
-  const toggleRecording = () => {
-    setIsRecording(!isRecording);
-    if (!isRecording) {
+  const toggleRecording = async () => {
+    if (isRecording) {
+      setIsRecording(false);
       toast({
-        description: "Voice recording started. Speak clearly..."
+        description: "Voice recording cancelled"
       });
-      // This would be where you implement actual voice recording
-      // For demo, we'll simulate with a timeout
-      setTimeout(() => {
+      return;
+    }
+    
+    setIsRecording(true);
+    toast({
+      description: "Voice recording started. Speak clearly..."
+    });
+    
+    try {
+      // In a real implementation, we would capture audio here
+      // For now, we'll simulate with a timeout
+      setTimeout(async () => {
         setIsRecording(false);
-        setInputValue("Generate an email campaign for new product launch");
+        
+        if (!isApiAvailable || !isApiKeyValid) {
+          toast({
+            variant: "destructive",
+            description: API_ERROR_MESSAGE
+          });
+          return;
+        }
+        
+        // Simulate processing voice to text
+        // In a real app, we would call processVoiceToText with actual audio data
+        const transcription = "Generate an email campaign for new product launch";
+        
+        setInputValue(transcription);
         toast({
           description: "Voice input captured"
         });
       }, 3000);
-    } else {
+    } catch (error) {
+      setIsRecording(false);
       toast({
-        description: "Voice recording cancelled"
+        variant: "destructive",
+        description: "Error processing voice input"
       });
     }
   };
@@ -230,16 +227,19 @@ export function AIAssistantInterface({
         toast({
           description: "Opening in viewer..."
         });
+        navigate("/campaigns/c1/view");
         break;
       case "edit":
         toast({
           description: "Opening editor..."
         });
+        navigate("/campaigns/c1/edit");
         break;
       case "schedule":
         toast({
           description: "Opening scheduler..."
         });
+        navigate("/campaigns/c1/schedule");
         break;
       case "activate":
         toast({
@@ -339,6 +339,13 @@ export function AIAssistantInterface({
                 <span>Using: {selectedTool}</span>
               </Badge>
             )}
+
+            {!isApiKeyValid && (
+              <Badge variant="destructive" className="gap-1">
+                <AlertCircle className="h-3 w-3" />
+                <span>API Error</span>
+              </Badge>
+            )}
           </div>
           
           <div className="flex items-center gap-2">
@@ -414,6 +421,27 @@ export function AIAssistantInterface({
                 </div>
               </div>
             )}
+
+            {!isApiAvailable && (
+              <div className="p-4 border border-destructive/50 bg-destructive/10 rounded-md">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-destructive" />
+                  <h3 className="font-medium">AI Assistant Unavailable</h3>
+                </div>
+                <p className="text-sm mt-1">
+                  {API_ERROR_MESSAGE}
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={() => navigate("/settings")}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Check API Settings
+                </Button>
+              </div>
+            )}
             
             <div ref={messagesEndRef} />
           </div>
@@ -443,9 +471,9 @@ export function AIAssistantInterface({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask anything or type a command..."
+              placeholder={isApiAvailable ? "Ask anything or type a command..." : "AI is currently unavailable..."}
               className="resize-none pr-24 min-h-[60px] max-h-[120px]"
-              disabled={isLoading}
+              disabled={isLoading || !isApiAvailable || !isApiKeyValid}
             />
             <div className="absolute right-2 bottom-2 flex gap-1">
               <TooltipProvider>
@@ -457,7 +485,7 @@ export function AIAssistantInterface({
                       variant="ghost"
                       className={cn(isRecording && "text-red-500")}
                       onClick={toggleRecording}
-                      disabled={isLoading}
+                      disabled={isLoading || !isApiAvailable || !isApiKeyValid}
                     >
                       {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                     </Button>
@@ -470,7 +498,7 @@ export function AIAssistantInterface({
                 type="button"
                 size="icon"
                 onClick={handleSendMessage}
-                disabled={isLoading || !inputValue.trim()}
+                disabled={isLoading || !inputValue.trim() || !isApiAvailable || !isApiKeyValid}
                 className="text-primary rounded-full"
               >
                 <Send className="h-4 w-4" />

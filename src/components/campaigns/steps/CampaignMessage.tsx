@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useCampaign } from "@/components/campaigns/CampaignContext";
 import { Badge } from "@/components/ui/badge";
@@ -8,16 +9,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Zap, Sparkles, Save, Palette, Image, FileUp, MessageCircle, FileText } from "lucide-react";
+import { Zap, Sparkles, Save, Palette, Image, FileUp, MessageCircle, FileText, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { generateCampaignContent } from "@/lib/openai";
+import { useOpenAI } from "@/contexts/OpenAIContext";
 
 export const CampaignMessage = () => {
   const { campaign, updateMessage } = useCampaign();
   const [goal, setGoal] = useState(campaign.message.goal || "");
   const [generating, setGenerating] = useState(false);
   const [selectedTab, setSelectedTab] = useState("compose");
+  const { isApiAvailable, isApiKeyValid } = useOpenAI();
 
-  const handleGenerateContent = () => {
+  const handleGenerateContent = async () => {
     if (!goal) {
       toast({
         title: "Error", 
@@ -27,37 +31,51 @@ export const CampaignMessage = () => {
       return;
     }
     
+    if (!isApiAvailable || !isApiKeyValid) {
+      toast({
+        title: "API Error",
+        description: "OpenAI API is currently unavailable. Please check your API settings.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setGenerating(true);
     
-    // Simulate AI generation delay
-    setTimeout(() => {
-      let subject = "";
-      let content = "";
+    try {
+      // Generate content using OpenAI
+      const result = await generateCampaignContent(
+        campaign.type,
+        goal,
+        campaign.audience?.name || "general audience",
+        "professional"
+      );
       
-      if (campaign.type === "email") {
-        subject = "Special Offer Just For You - Limited Time!";
-        content = `Hi {first_name},\n\nWe noticed you've been looking at our premium products recently. We'd love to offer you a special 20% discount on your next purchase!\n\nUse code SPECIAL20 at checkout to claim your discount. This offer is valid for the next 7 days only.\n\nBest regards,\nThe Marketing Team`;
-      } else if (campaign.type === "sms" || campaign.type === "whatsapp") {
-        content = `Hi {first_name}! Exclusive offer: 20% off your next purchase with code SPECIAL20. Valid for 7 days only. Reply STOP to opt out.`;
-      } else {
-        // Ads
-        subject = "Save 20% On Your Next Purchase";
-        content = `Limited time offer! Get 20% off sitewide. Use code SPECIAL20 at checkout.`;
+      if (!result) {
+        throw new Error("Failed to generate content");
       }
       
+      // Update the message with generated content
       updateMessage({
-        subject: subject,
-        content: content,
+        subject: result.subject || "",
+        content: result.content,
         goal: goal
       });
-      
-      setGenerating(false);
       
       toast({
         title: "Content generated",
         description: "AI has created message content based on your goal"
       });
-    }, 2000);
+    } catch (error) {
+      console.error("Error generating content:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate content. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const handleToggleAiOptimization = (checked: boolean) => {
@@ -92,32 +110,43 @@ export const CampaignMessage = () => {
               Describe your campaign goal and let our AI generate optimized content for you
             </p>
             
-            <div className="mb-4">
-              <Label htmlFor="campaign-goal">Campaign Goal</Label>
-              <div className="flex gap-2 mt-1">
-                <Input 
-                  id="campaign-goal" 
-                  value={goal}
-                  onChange={(e) => setGoal(e.target.value)}
-                  placeholder="E.g., Promote 20% discount to inactive customers"
-                  className="flex-1"
-                />
-                <Button 
-                  onClick={handleGenerateContent} 
-                  disabled={generating || !goal}
-                  className="whitespace-nowrap"
-                >
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  {generating ? "Generating..." : "Generate Content"}
-                </Button>
+            {!isApiAvailable || !isApiKeyValid ? (
+              <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-md">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                  <p className="text-sm font-medium">OpenAI API is unavailable</p>
+                </div>
+                <p className="text-sm mt-1">Please check your API settings to use AI-powered content generation.</p>
               </div>
-            </div>
+            ) : (
+              <div className="mb-4">
+                <Label htmlFor="campaign-goal">Campaign Goal</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input 
+                    id="campaign-goal" 
+                    value={goal}
+                    onChange={(e) => setGoal(e.target.value)}
+                    placeholder="E.g., Promote 20% discount to inactive customers"
+                    className="flex-1"
+                  />
+                  <Button 
+                    onClick={handleGenerateContent} 
+                    disabled={generating || !goal || !isApiAvailable || !isApiKeyValid}
+                    className="whitespace-nowrap"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    {generating ? "Generating..." : "Generate Content"}
+                  </Button>
+                </div>
+              </div>
+            )}
             
             <div className="flex items-center space-x-2">
               <Switch
                 id="ai-optimize"
                 checked={campaign.message.aiOptimized}
                 onCheckedChange={handleToggleAiOptimization}
+                disabled={!isApiAvailable || !isApiKeyValid}
               />
               <Label htmlFor="ai-optimize">Enable AI optimization (improves performance over time)</Label>
             </div>

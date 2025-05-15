@@ -1,14 +1,22 @@
 
-import { createRoot } from 'react-dom/client'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import './index.css'
+import { ThemeProvider } from './components/ThemeProvider.tsx'
 import { Toaster } from '@/components/ui/toaster'
-import { Toaster as SonnerToaster } from 'sonner'
+import { OpenAIProvider } from './contexts/OpenAIContext.tsx'
 
-createRoot(document.getElementById("root")!).render(
-  <>
-    <App />
-    <Toaster />
-    <SonnerToaster position="top-right" />
-  </>
-);
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <ThemeProvider defaultTheme="light" storageKey="ui-theme">
+        <OpenAIProvider>
+          <App />
+          <Toaster />
+        </OpenAIProvider>
+      </ThemeProvider>
+    </BrowserRouter>
+  </React.StrictMode>,
+)

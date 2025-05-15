@@ -1,139 +1,82 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Layout } from "@/components/Layout";
-import { 
-  Tabs, 
-  TabsList, 
-  TabsTrigger, 
-  TabsContent 
-} from "@/components/ui/tabs";
-import { 
-  User, 
-  Building2, 
-  Users, 
-  PlugZap, 
-  Bell, 
-  CreditCard, 
-  Settings2, 
-  Key, 
-  Shield 
-} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileSettings } from "@/components/settings/ProfileSettings";
 import { CompanySettings } from "@/components/settings/CompanySettings";
-import { TeamManagement } from "@/components/settings/TeamManagement";
-import { IntegrationsSettings } from "@/components/settings/IntegrationsSettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { BillingSettings } from "@/components/settings/BillingSettings";
-import { AutomationSettings } from "@/components/settings/AutomationSettings";
 import { ApiSettings } from "@/components/settings/ApiSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
+import { TeamManagement } from "@/components/settings/TeamManagement";
+import { IntegrationsSettings } from "@/components/settings/IntegrationsSettings";
+import { AutomationSettings } from "@/components/settings/AutomationSettings";
+import { AISettings } from "@/components/settings/AISettings";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
 
-  const tabs = [
-    { id: "profile", label: "Profile Settings", icon: User },
-    { id: "company", label: "Company Settings", icon: Building2 },
-    { id: "team", label: "Team Management", icon: Users },
-    { id: "integrations", label: "Integrations", icon: PlugZap },
-    { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "billing", label: "Billing & Plans", icon: CreditCard },
-    { id: "automation", label: "Automation Preferences", icon: Settings2 },
-    { id: "api", label: "API & Webhooks", icon: Key },
-    { id: "security", label: "Security & Privacy", icon: Shield },
-  ];
-
   return (
     <Layout>
-      <div className="p-6 md:p-8 animate-fade-in">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold">Settings</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your account, workspace, and platform preferences
-          </p>
-        </header>
+      <div className="container mx-auto py-6">
+        <h1 className="text-3xl font-bold mb-6">Settings</h1>
 
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Mobile Tabs */}
-          <div className="md:hidden w-full mb-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="w-full overflow-x-auto flex-wrap justify-start h-auto p-1 gap-1">
-                {tabs.map((tab) => (
-                  <TabsTrigger 
-                    key={tab.id} 
-                    value={tab.id}
-                    className="flex items-center gap-2 px-3 py-2"
-                  >
-                    <tab.icon className="h-4 w-4" />
-                    <span className="whitespace-nowrap">{tab.label}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 gap-2">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="company">Company</TabsTrigger>
+            <TabsTrigger value="team">Team</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            <TabsTrigger value="billing">Billing</TabsTrigger>
+            <TabsTrigger value="ai">AI</TabsTrigger>
+            <TabsTrigger value="integrations">Integrations</TabsTrigger>
+            <TabsTrigger value="api">API</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
+            <TabsTrigger value="automation">Automation</TabsTrigger>
+          </TabsList>
+
+          <div className="p-1">
+            <TabsContent value="profile" className="space-y-4">
+              <ProfileSettings />
+            </TabsContent>
+
+            <TabsContent value="company" className="space-y-4">
+              <CompanySettings />
+            </TabsContent>
+
+            <TabsContent value="team" className="space-y-4">
+              <TeamManagement />
+            </TabsContent>
+
+            <TabsContent value="notifications" className="space-y-4">
+              <NotificationSettings />
+            </TabsContent>
+
+            <TabsContent value="billing" className="space-y-4">
+              <BillingSettings />
+            </TabsContent>
+            
+            <TabsContent value="ai" className="space-y-4">
+              <AISettings />
+            </TabsContent>
+
+            <TabsContent value="integrations" className="space-y-4">
+              <IntegrationsSettings />
+            </TabsContent>
+
+            <TabsContent value="api" className="space-y-4">
+              <ApiSettings />
+            </TabsContent>
+
+            <TabsContent value="security" className="space-y-4">
+              <SecuritySettings />
+            </TabsContent>
+
+            <TabsContent value="automation" className="space-y-4">
+              <AutomationSettings />
+            </TabsContent>
           </div>
-
-          <Tabs 
-            value={activeTab} 
-            onValueChange={setActiveTab}
-            orientation="vertical"
-            className="flex flex-col md:flex-row w-full gap-8"
-          >
-            {/* Desktop Sidebar */}
-            <div className="hidden md:block w-64 shrink-0">
-              <TabsList className="flex flex-col h-auto bg-transparent p-0 space-y-1">
-                {tabs.map((tab) => (
-                  <TabsTrigger 
-                    key={tab.id} 
-                    value={tab.id}
-                    className="justify-start gap-3 px-4 py-3 w-full text-left"
-                  >
-                    <tab.icon className="h-5 w-5" />
-                    <span>{tab.label}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </div>
-
-            {/* Tab Content Area */}
-            <div className="flex-1 bg-card rounded-lg border shadow-sm p-1">
-              <TabsContent value="profile" className="m-0 p-6">
-                <ProfileSettings />
-              </TabsContent>
-              
-              <TabsContent value="company" className="m-0 p-6">
-                <CompanySettings />
-              </TabsContent>
-              
-              <TabsContent value="team" className="m-0 p-6">
-                <TeamManagement />
-              </TabsContent>
-              
-              <TabsContent value="integrations" className="m-0 p-6">
-                <IntegrationsSettings />
-              </TabsContent>
-              
-              <TabsContent value="notifications" className="m-0 p-6">
-                <NotificationSettings />
-              </TabsContent>
-              
-              <TabsContent value="billing" className="m-0 p-6">
-                <BillingSettings />
-              </TabsContent>
-              
-              <TabsContent value="automation" className="m-0 p-6">
-                <AutomationSettings />
-              </TabsContent>
-              
-              <TabsContent value="api" className="m-0 p-6">
-                <ApiSettings />
-              </TabsContent>
-              
-              <TabsContent value="security" className="m-0 p-6">
-                <SecuritySettings />
-              </TabsContent>
-            </div>
-          </Tabs>
-        </div>
+        </Tabs>
       </div>
     </Layout>
   );
