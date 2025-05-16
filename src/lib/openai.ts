@@ -76,6 +76,16 @@ export async function callOpenAI(
     if (!response.ok) {
       const errorData = await response.json();
       console.error("OpenAI API Error:", errorData);
+      
+      // Handle specific error types
+      if (response.status === 429) {
+        if (errorData.error?.type === "insufficient_quota") {
+          throw new Error("API quota exceeded. Please check your OpenAI billing details.");
+        } else {
+          throw new Error("Rate limit exceeded. Please try again in a moment.");
+        }
+      }
+      
       throw new Error(`API error: ${response.status}`);
     }
 
@@ -105,7 +115,14 @@ export async function validateAPIKey(): Promise<boolean> {
       console.log("API key validation successful");
       return true;
     } else {
-      console.error("API key validation failed:", await response.json());
+      const errorData = await response.json();
+      console.error("API key validation failed:", errorData);
+      
+      // Log specific error information for debugging
+      if (errorData.error?.type === "insufficient_quota") {
+        console.error("API quota exceeded. Please check your OpenAI billing details.");
+      }
+      
       return false;
     }
   } catch (error) {
@@ -403,4 +420,3 @@ export async function generateCampaignContent(
     return null;
   }
 }
-

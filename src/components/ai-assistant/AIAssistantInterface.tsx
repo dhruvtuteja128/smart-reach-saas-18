@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { 
   Send, 
@@ -181,11 +180,22 @@ export function AIAssistantInterface({
     } catch (error) {
       console.error("Error processing message:", error);
       
+      // Get error message
+      let errorMsg = "I'm sorry, I couldn't process your request at the moment.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes("quota")) {
+          errorMsg = "I'm unable to respond due to API quota limitations. Please check the OpenAI account billing settings and try again later.";
+        } else if (error.message.includes("rate limit")) {
+          errorMsg = "The AI service is currently experiencing high demand. Please try again in a moment.";
+        }
+      }
+      
       // Fallback response if API fails
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "I'm sorry, I couldn't process your request at the moment. Let me help you with that when my connection is restored. What specifically would you like assistance with?",
+        content: errorMsg,
         timestamp: new Date()
       };
       

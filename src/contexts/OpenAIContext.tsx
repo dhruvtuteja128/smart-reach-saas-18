@@ -39,10 +39,10 @@ export function OpenAIProvider({ children }: { children: ReactNode }) {
             description: "OpenAI connection established! AI Assistant is ready."
           });
         } else {
-          setErrorMessage("OpenAI API key is invalid or has expired.");
+          setErrorMessage("OpenAI API key is invalid or has insufficient quota.");
           toast({
             variant: "destructive",
-            description: "Could not connect to OpenAI. AI features may not work correctly."
+            description: "Could not connect to OpenAI. The API key may have insufficient quota or is invalid."
           });
         }
       } catch (error) {
@@ -52,7 +52,7 @@ export function OpenAIProvider({ children }: { children: ReactNode }) {
         setErrorMessage("Failed to validate OpenAI API key.");
         toast({
           variant: "destructive",
-          description: "Error connecting to OpenAI API. Please check your connection."
+          description: "Error connecting to OpenAI API. Please check your connection and API quota."
         });
       } finally {
         setIsTestingConnection(false);
@@ -79,10 +79,10 @@ export function OpenAIProvider({ children }: { children: ReactNode }) {
           description: "OpenAI connection successful! AI features are ready to use.",
         });
       } else {
-        setErrorMessage("OpenAI connection failed. Please check your API key and try again.");
+        setErrorMessage("OpenAI connection failed. Please check your API key quota and try again.");
         toast({
           variant: "destructive",
-          description: "OpenAI connection failed. AI features may not work correctly.",
+          description: "OpenAI connection failed. Please check your API quota or billing details.",
         });
       }
 
@@ -90,10 +90,10 @@ export function OpenAIProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Error testing connection:", error);
       setIsApiAvailable(false);
-      setErrorMessage("Error testing OpenAI connection.");
+      setErrorMessage("Error testing OpenAI connection. Quota may be exceeded.");
       toast({
         variant: "destructive",
-        description: "Error testing OpenAI connection. Please try again later.",
+        description: "Error testing OpenAI connection. Please check your API quota.",
       });
       return false;
     } finally {
