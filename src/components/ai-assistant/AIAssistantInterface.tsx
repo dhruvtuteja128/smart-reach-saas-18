@@ -44,6 +44,19 @@ interface Message {
   }[];
 }
 
+// Define a type for the AIMessage component that doesn't accept 'system' role
+interface AIMessageProps {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+  intent?: string;
+  actions?: {
+    label: string;
+    action: string;
+  }[];
+}
+
 interface AIAssistantInterfaceProps {
   autoActionsEnabled: boolean;
   onAutoActionsToggle: (enabled: boolean) => void;
@@ -430,14 +443,21 @@ export function AIAssistantInterface({
         
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-6 pb-20">
-            {messages.map((message) => (
-              <AIMessage 
-                key={message.id}
-                message={message}
-                onFeedback={handleFeedback}
-                onActionClick={handleActionClick}
-              />
-            ))}
+            {messages.map((message) => {
+              // Filter out system messages as AIMessage component only accepts user or assistant roles
+              if (message.role === "system") {
+                return null;
+              }
+              
+              return (
+                <AIMessage 
+                  key={message.id}
+                  message={message as AIMessageProps} // Type assertion to match expected props
+                  onFeedback={handleFeedback}
+                  onActionClick={handleActionClick}
+                />
+              );
+            })}
             
             {isLoading && (
               <div className="flex items-start gap-4">
