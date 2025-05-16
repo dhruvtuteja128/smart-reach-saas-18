@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 import { formatAIError } from "@/lib/utils";
 
@@ -34,6 +35,14 @@ export interface OpenAIResponse {
     completion_tokens: number;
     total_tokens: number;
   };
+}
+
+/**
+ * Interface for campaign content generation result
+ */
+export interface CampaignContentResult {
+  subject?: string;
+  content: string;
 }
 
 /**
@@ -328,3 +337,70 @@ export async function generateSubjectLines(
     return null;
   }
 }
+
+/**
+ * Generate content for a campaign based on its type, goal, and audience
+ */
+export async function generateCampaignContent(
+  campaignType: string,
+  goal: string,
+  audience: string,
+  tone: string = "professional"
+): Promise<CampaignContentResult | null> {
+  try {
+    const prompt = `Create compelling marketing content for a ${campaignType} campaign.
+    
+    Goal: ${goal}
+    Target audience: ${audience}
+    Tone: ${tone}
+    
+    For an email or ad campaign, provide both a subject line/headline and message content.
+    For SMS or messaging apps, provide just the message content.
+    
+    Make the content engaging, persuasive, and tailored to the target audience.`;
+    
+    const messages: OpenAIMessage[] = [
+      {
+        role: "system",
+        content: "You are an expert marketing copywriter who specializes in creating high-converting campaign content for various channels."
+      },
+      { role: "user", content: prompt }
+    ];
+    
+    const result = await callOpenAI(messages);
+    
+    if (!result) {
+      return null;
+    }
+    
+    // Parse the result to extract subject and content
+    let subject: string | undefined;
+    let content: string = result;
+    
+    if (campaignType === "email" || campaignType === "ads") {
+      // Try to extract subject line/headline
+      const subjectMatch = result.match(/(?:subject|headline)(?:\s*line)?:\s*(.+?)(?:\n|$)/i);
+      if (subjectMatch && subjectMatch[1]) {
+        subject = subjectMatch[1].trim();
+        // Remove the subject line from the content
+        content = result.replace(/(?:subject|headline)(?:\s*line)?:\s*(.+?)(?:\n|$)/i, '').trim();
+      } else {
+        // If no clear subject found, try to extract the first line as subject
+        const lines = result.split('\n').filter(line => line.trim().length > 0);
+        if (lines.length > 1) {
+          subject = lines[0].trim();
+          content = lines.slice(1).join('\n').trim();
+        }
+      }
+    }
+    
+    return {
+      subject,
+      content
+    };
+  } catch (error) {
+    console.error("Error generating campaign content:", error);
+    return null;
+  }
+}
+

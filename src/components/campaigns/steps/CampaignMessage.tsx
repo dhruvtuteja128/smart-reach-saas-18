@@ -16,7 +16,7 @@ import { useOpenAI } from "@/contexts/OpenAIContext";
 
 export const CampaignMessage = () => {
   const { campaign, updateMessage } = useCampaign();
-  const [goal, setGoal] = useState(campaign.message.goal || "");
+  const [goal, setGoal] = useState(campaign.message?.goal || "");
   const [generating, setGenerating] = useState(false);
   const [selectedTab, setSelectedTab] = useState("compose");
   const { isApiAvailable, isApiKeyValid } = useOpenAI();
@@ -47,7 +47,7 @@ export const CampaignMessage = () => {
       const result = await generateCampaignContent(
         campaign.type,
         goal,
-        campaign.audience || "general audience", // Fix here - campaign.audience is a string
+        campaign.audience || "general audience", 
         "professional"
       );
       
@@ -144,8 +144,8 @@ export const CampaignMessage = () => {
             <div className="flex items-center space-x-2">
               <Switch
                 id="ai-optimize"
-                checked={campaign.message.aiOptimized}
-                onCheckedChange={handleToggleAiOptimization}
+                checked={campaign.message?.aiOptimized || false}
+                onCheckedChange={(checked) => updateMessage({ aiOptimized: checked })}
                 disabled={!isApiAvailable || !isApiKeyValid}
               />
               <Label htmlFor="ai-optimize">Enable AI optimization (improves performance over time)</Label>
@@ -172,7 +172,7 @@ export const CampaignMessage = () => {
               <Label htmlFor="subject">Subject Line / Headline</Label>
               <Input 
                 id="subject"
-                value={campaign.message.subject || ""}
+                value={campaign.message?.subject || ""}
                 onChange={(e) => updateMessage({ subject: e.target.value })}
                 placeholder="Enter subject line or headline"
                 className="mt-1"
@@ -185,7 +185,7 @@ export const CampaignMessage = () => {
             <div className="mt-1 relative">
               <Textarea 
                 id="message-content"
-                value={campaign.message.content}
+                value={campaign.message?.content || ""}
                 onChange={(e) => updateMessage({ content: e.target.value })}
                 placeholder="Enter your message content here..."
                 className="min-h-[200px]"
@@ -226,10 +226,10 @@ export const CampaignMessage = () => {
               {campaign.type === "email" && (
                 <>
                   <div className="text-sm font-medium border-b pb-2 mb-2">
-                    Subject: {campaign.message.subject || "No subject"}
+                    Subject: {campaign.message?.subject || "No subject"}
                   </div>
                   <div className="whitespace-pre-line">
-                    {campaign.message.content || "No content created yet"}
+                    {campaign.message?.content || "No content created yet"}
                   </div>
                 </>
               )}
@@ -237,7 +237,7 @@ export const CampaignMessage = () => {
               {(campaign.type === "sms" || campaign.type === "whatsapp") && (
                 <div className="bg-primary/5 rounded-lg p-3 max-w-xs mx-auto">
                   <div className="text-sm whitespace-pre-line">
-                    {campaign.message.content || "No content created yet"}
+                    {campaign.message?.content || "No content created yet"}
                   </div>
                 </div>
               )}
@@ -245,13 +245,13 @@ export const CampaignMessage = () => {
               {campaign.type === "ads" && (
                 <div className="border rounded-md p-3">
                   <div className="font-semibold text-base mb-2">
-                    {campaign.message.subject || "Ad Headline"}
+                    {campaign.message?.subject || "Ad Headline"}
                   </div>
                   <div className="bg-muted/50 h-36 flex items-center justify-center rounded mb-2">
                     <Image className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <div className="text-sm">
-                    {campaign.message.content || "Ad content will appear here"}
+                    {campaign.message?.content || "Ad content will appear here"}
                   </div>
                 </div>
               )}
@@ -261,7 +261,12 @@ export const CampaignMessage = () => {
       </Tabs>
       
       <div className="mt-6 flex justify-end">
-        <Button variant="outline" onClick={handleSaveAsTemplate}>
+        <Button variant="outline" onClick={() => {
+          toast({
+            title: "Template saved", 
+            description: "Your message has been saved as a template" 
+          });
+        }}>
           <Save className="h-4 w-4 mr-2" />
           Save as Template
         </Button>
