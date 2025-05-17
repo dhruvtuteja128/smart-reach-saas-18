@@ -1,6 +1,22 @@
 
 import { useState } from "react";
 import {
+  ReactFlow,
+  Background,
+  Controls,
+  MiniMap,
+  Panel,
+  useNodesState,
+  useEdgesState,
+  addEdge,
+  Connection,
+  Node,
+  Edge,
+  ConnectionLineType,
+} from "reactflow";
+import "reactflow/dist/style.css";
+
+import {
   ZoomIn,
   ZoomOut,
   Clock,
@@ -31,6 +47,13 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { WorkflowNode } from "./WorkflowNode";
+import { toast } from "sonner";
+
+// Define node types for our workflow
+const nodeTypes = {
+  workflowNode: WorkflowNode,
+};
 
 interface WorkflowBuilderProps {
   onSave?: () => void;
@@ -41,6 +64,8 @@ export function WorkflowBuilder({ onSave, onClose }: WorkflowBuilderProps) {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [zoom, setZoom] = useState(100);
   const [showSettings, setShowSettings] = useState(false);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   // Mock data for the node categories - in a real implementation, this would be more robust
   const nodeCategories = [
@@ -115,6 +140,55 @@ export function WorkflowBuilder({ onSave, onClose }: WorkflowBuilderProps) {
     setSelectedNode(nodeId);
   };
 
+  const onConnect = (params: Connection) => {
+    setEdges((eds) => addEdge({...params, type: 'smoothstep'}, eds));
+    toast.success("Nodes connected successfully");
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  };
+  
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+
+    const reactFlowBounds = event.currentTarget.getBoundingClientRect();
+    const itemData = event.dataTransfer.getData('application/json');
+    
+    try {
+      const data = JSON.parse(itemData);
+      
+      // Get position where item was dropped
+      const position = {
+        x: (event.clientX - reactFlowBounds.left) / (zoom / 100),
+        y: (event.clientY - reactFlowBounds.top) / (zoom / 100),
+      };
+
+      const newNode: Node = {
+        id: `${data.id}-${Date.now()}`,
+        type: 'workflowNode',
+        position,
+        data: {
+          type: data.id.split('-')[0],
+          label: data.label,
+          icon: data.icon.name,
+        },
+      };
+
+      setNodes((nds) => [...nds, newNode]);
+      toast.success(`Added ${data.label} node to workflow`);
+    } catch (error) {
+      console.error('Error creating new node:', error);
+      toast.error('Could not add node to workflow');
+    }
+  };
+
+  const handleSaveWorkflow = () => {
+    if (onSave) onSave();
+    toast.success("Workflow saved successfully");
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
       {/* Header */}
@@ -146,7 +220,7 @@ export function WorkflowBuilder({ onSave, onClose }: WorkflowBuilderProps) {
           <Button variant="outline" size="sm" onClick={onClose}>
             Cancel
           </Button>
-          <Button size="sm" onClick={onSave}>
+          <Button size="sm" onClick={handleSaveWorkflow}>
             <Save className="h-4 w-4 mr-2" />
             Save Workflow
           </Button>
@@ -189,37 +263,32 @@ export function WorkflowBuilder({ onSave, onClose }: WorkflowBuilderProps) {
 
         {/* Main Canvas Area */}
         <div 
-          className="flex-1 bg-muted/30 overflow-auto p-8" 
-          style={{ 
-            backgroundImage: "linear-gradient(to right, #f0f0f0 1px, transparent 1px), linear-gradient(to bottom, #f0f0f0 1px, transparent 1px)",
-            backgroundSize: "20px 20px" 
-          }}
+          className="flex-1 bg-muted/30 overflow-auto" 
         >
-          <div 
-            className="min-h-full bg-white rounded-lg shadow-sm border flex items-center justify-center"
-            style={{ 
-              transform: `scale(${zoom / 100})`, 
-              transformOrigin: "center center",
-              transition: "transform 0.2s ease-in-out",
-              width: "2000px",
-              height: "1500px"
-            }}
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            nodeTypes={nodeTypes}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            connectionLineType={ConnectionLineType.SmoothStep}
+            fitView
+            style={{ width: '100%', height: '100%' }}
+            minZoom={0.5}
+            maxZoom={2}
           >
-            {/* Empty state or starter node */}
-            <div className="text-center p-8 max-w-md">
-              <div className="bg-primary/10 p-4 rounded-full inline-block mb-4">
-                <Workflow className="h-8 w-8 text-primary" />
+            <Background />
+            <Controls />
+            <MiniMap />
+            <Panel position="top-center">
+              <div className="bg-background/80 backdrop-blur-sm p-2 rounded-md shadow-md mt-2">
+                <p className="text-sm">Drag elements from the left sidebar onto the canvas to build your workflow</p>
               </div>
-              <h3 className="text-xl font-medium mb-2">Start Building Your Workflow</h3>
-              <p className="text-muted-foreground mb-6">
-                Drag elements from the left sidebar to begin creating your automation workflow.
-                Start with a trigger and connect it to actions, conditions, or delays.
-              </p>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" /> Add Trigger
-              </Button>
-            </div>
-          </div>
+            </Panel>
+          </ReactFlow>
         </div>
 
         {/* Right Sidebar - Configuration (shown when a node is selected) */}
