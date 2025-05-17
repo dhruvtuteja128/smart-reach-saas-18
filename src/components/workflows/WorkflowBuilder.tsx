@@ -86,7 +86,8 @@ export function WorkflowBuilder({ onSave, onClose, workflowId, workflow }: Workf
             label: 'New Contact Added',
             icon: 'Users',
             onConfigure: handleConfigureNode,
-            onDelete: handleDeleteNode
+            onDelete: handleDeleteNode,
+            config: {} // Add this line to provide the config property
           }
         },
         {
@@ -99,7 +100,8 @@ export function WorkflowBuilder({ onSave, onClose, workflowId, workflow }: Workf
             label: 'Send Welcome Email',
             icon: 'Mail',
             onConfigure: handleConfigureNode,
-            onDelete: handleDeleteNode
+            onDelete: handleDeleteNode,
+            config: {} // Add this line to provide the config property
           }
         }
       ]
@@ -264,7 +266,8 @@ export function WorkflowBuilder({ onSave, onClose, workflowId, workflow }: Workf
           label: data.label,
           icon: data.icon.name,
           onConfigure: handleConfigureNode,
-          onDelete: handleDeleteNode
+          onDelete: handleDeleteNode,
+          config: {} // Add this empty config object to all new nodes
         },
       };
 

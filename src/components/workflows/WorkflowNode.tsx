@@ -34,7 +34,7 @@ interface WorkflowNodeProps {
     onConfigure?: (id: string, config: any) => void;
     onDelete?: (id: string) => void;
     id: string;
-    config?: any;
+    config?: any;  // Explicitly add config property to the interface
   };
   id: string;
   selected: boolean;
