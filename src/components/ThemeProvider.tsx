@@ -1,6 +1,5 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 type Theme = "dark" | "light" | "system";
 
@@ -28,7 +27,6 @@ export function ThemeProvider({
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem("theme") as Theme) || defaultTheme
   );
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     const root = window.document.documentElement;
