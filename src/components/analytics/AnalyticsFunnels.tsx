@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,8 +14,8 @@ import {
   Edit, 
   Trash, 
   Mail, 
-  Browser, 
-  Form, 
+  Globe,
+  FileText,
   DollarSign, 
   CircleCheck,
   Save,
@@ -35,10 +34,10 @@ import { motion } from "framer-motion";
 const stepTypeIcons: Record<string, React.ReactNode> = {
   "Email Opened": <Mail className="h-4 w-4" />,
   "Email Clicked": <CircleCheck className="h-4 w-4" />,
-  "Website Visit": <Browser className="h-4 w-4" />,
+  "Website Visit": <Globe className="h-4 w-4" />, // Updated icon
   "WhatsApp Sent": <Mail className="h-4 w-4" />,
   "WhatsApp Reply": <Mail className="h-4 w-4" />,
-  "Form Submission": <Form className="h-4 w-4" />,
+  "Form Submission": <FileText className="h-4 w-4" />, // Updated icon
   "Lead Created": <CircleCheck className="h-4 w-4" />,
   "Demo Booked": <CircleCheck className="h-4 w-4" />,
   "Purchase Completed": <DollarSign className="h-4 w-4" />,
@@ -337,7 +336,6 @@ export function AnalyticsFunnels() {
         onOpenChange={(open) => {
           if (!open) setIsBuilderOpen(false);
         }}
-        className="max-w-4xl"
       >
         <DialogContent className="max-w-5xl w-full">
           <DialogHeader>

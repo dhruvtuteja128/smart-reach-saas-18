@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Mail,
-  Browser,
-  Form,
+  Globe, // Replacing Browser with Globe
+  FileText, // Replacing Form with FileText
   DollarSign,
   CircleCheck,
   ArrowDown,
@@ -28,10 +29,10 @@ import { v4 as uuidv4 } from "uuid";
 const funnelStepOptions = [
   { value: "Email Opened", label: "Email Opened", icon: <Mail className="h-4 w-4" /> },
   { value: "Email Clicked", label: "Email Clicked", icon: <CircleCheck className="h-4 w-4" /> },
-  { value: "Website Visit", label: "Website Visit", icon: <Browser className="h-4 w-4" /> },
+  { value: "Website Visit", label: "Website Visit", icon: <Globe className="h-4 w-4" /> }, // Updated icon
   { value: "WhatsApp Sent", label: "WhatsApp Sent", icon: <MessageCircle className="h-4 w-4" /> },
   { value: "WhatsApp Reply", label: "WhatsApp Reply", icon: <MessageCircle className="h-4 w-4" /> },
-  { value: "Form Submission", label: "Form Submission", icon: <Form className="h-4 w-4" /> },
+  { value: "Form Submission", label: "Form Submission", icon: <FileText className="h-4 w-4" /> }, // Updated icon
   { value: "Lead Created", label: "Lead Created", icon: <CircleCheck className="h-4 w-4" /> },
   { value: "Demo Booked", label: "Demo Booked", icon: <CircleCheck className="h-4 w-4" /> },
   { value: "Purchase Completed", label: "Purchase Completed", icon: <DollarSign className="h-4 w-4" /> },

@@ -2,8 +2,8 @@
 import React from "react";
 import {
   Mail,
-  Browser,
-  Form,
+  Globe, // Replacing Browser with Globe
+  FileText, // Replacing Form with FileText
   DollarSign,
   CircleCheck,
   ArrowRight,
@@ -20,10 +20,10 @@ interface FunnelVisualizationProps {
 const stepTypeIcons: Record<string, React.ReactNode> = {
   "Email Opened": <Mail className="h-4 w-4" />,
   "Email Clicked": <CircleCheck className="h-4 w-4" />,
-  "Website Visit": <Browser className="h-4 w-4" />,
+  "Website Visit": <Globe className="h-4 w-4" />, // Updated icon
   "WhatsApp Sent": <MessageCircle className="h-4 w-4" />,
   "WhatsApp Reply": <MessageCircle className="h-4 w-4" />,
-  "Form Submission": <Form className="h-4 w-4" />,
+  "Form Submission": <FileText className="h-4 w-4" />, // Updated icon
   "Lead Created": <CircleCheck className="h-4 w-4" />,
   "Demo Booked": <CircleCheck className="h-4 w-4" />,
   "Purchase Completed": <DollarSign className="h-4 w-4" />,
