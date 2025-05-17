@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
   ReactFlow,
   Background,
@@ -48,7 +48,11 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { WorkflowNode } from "./WorkflowNode";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
 
 // Define node types for our workflow
 const nodeTypes = {
@@ -56,16 +60,64 @@ const nodeTypes = {
 };
 
 interface WorkflowBuilderProps {
-  onSave?: () => void;
+  onSave?: (name: string, status: string) => void;
   onClose: () => void;
+  workflowId?: string | null;
+  workflow?: any;
 }
 
-export function WorkflowBuilder({ onSave, onClose }: WorkflowBuilderProps) {
+export function WorkflowBuilder({ onSave, onClose, workflowId, workflow }: WorkflowBuilderProps) {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [zoom, setZoom] = useState(100);
   const [showSettings, setShowSettings] = useState(false);
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [workflowName, setWorkflowName] = useState(workflow?.name || "");
+  const [workflowStatus, setWorkflowStatus] = useState(workflow?.status || "draft");
+  
+  // Initialize with sample nodes if editing an existing workflow
+  const initialNodes = workflowId 
+    ? [
+        {
+          id: 'trigger-1',
+          type: 'workflowNode',
+          position: { x: 250, y: 50 },
+          data: {
+            id: 'trigger-1',
+            type: 'trigger',
+            label: 'New Contact Added',
+            icon: 'Users',
+            onConfigure: handleConfigureNode,
+            onDelete: handleDeleteNode
+          }
+        },
+        {
+          id: 'action-1',
+          type: 'workflowNode',
+          position: { x: 250, y: 175 },
+          data: {
+            id: 'action-1',
+            type: 'action',
+            label: 'Send Welcome Email',
+            icon: 'Mail',
+            onConfigure: handleConfigureNode,
+            onDelete: handleDeleteNode
+          }
+        }
+      ]
+    : [];
+
+  const initialEdges = workflowId
+    ? [
+        {
+          id: 'e1-2',
+          source: 'trigger-1',
+          target: 'action-1',
+          type: 'smoothstep',
+        }
+      ]
+    : [];
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   // Mock data for the node categories - in a real implementation, this would be more robust
   const nodeCategories = [
@@ -136,14 +188,49 @@ export function WorkflowBuilder({ onSave, onClose }: WorkflowBuilderProps) {
     }
   };
 
-  const handleNodeClick = (nodeId: string) => {
-    setSelectedNode(nodeId);
-  };
+  function handleConfigureNode(nodeId: string, config: any) {
+    setNodes((nds) => nds.map(node => {
+      if (node.id === nodeId) {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            label: config.label || node.data.label,
+            config: {
+              ...(node.data.config || {}),
+              ...config
+            }
+          }
+        };
+      }
+      return node;
+    }));
+  }
+  
+  function handleDeleteNode(nodeId: string) {
+    // First, find all edges connected to this node and remove them
+    const nodesToDelete = [nodeId];
+    
+    setEdges((eds) => eds.filter(edge => 
+      !nodesToDelete.includes(edge.source) && !nodesToDelete.includes(edge.target)
+    ));
+    
+    // Then remove the node
+    setNodes((nds) => nds.filter(node => !nodesToDelete.includes(node.id)));
+    
+    toast.success("Node removed from workflow");
+  }
 
-  const onConnect = (params: Connection) => {
+  const onConnect = useCallback((params: Connection) => {
+    // Check if we already have a connection from this source
+    const sourceHasConnection = edges.some(
+      edge => edge.source === params.source && edge.sourceHandle === params.sourceHandle
+    );
+    
+    // For simplicity, let's allow multiple connections from a single source
     setEdges((eds) => addEdge({...params, type: 'smoothstep'}, eds));
     toast.success("Nodes connected successfully");
-  };
+  }, [edges, setEdges]);
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -165,14 +252,19 @@ export function WorkflowBuilder({ onSave, onClose }: WorkflowBuilderProps) {
         y: (event.clientY - reactFlowBounds.top) / (zoom / 100),
       };
 
+      const nodeId = `${data.id}-${uuidv4().substring(0, 8)}`;
+      
       const newNode: Node = {
-        id: `${data.id}-${Date.now()}`,
+        id: nodeId,
         type: 'workflowNode',
         position,
         data: {
+          id: nodeId,
           type: data.id.split('-')[0],
           label: data.label,
           icon: data.icon.name,
+          onConfigure: handleConfigureNode,
+          onDelete: handleDeleteNode
         },
       };
 
@@ -185,7 +277,15 @@ export function WorkflowBuilder({ onSave, onClose }: WorkflowBuilderProps) {
   };
 
   const handleSaveWorkflow = () => {
-    if (onSave) onSave();
+    if (!workflowName.trim()) {
+      toast.error("Please enter a workflow name");
+      return;
+    }
+    
+    if (onSave) {
+      onSave(workflowName, workflowStatus);
+    }
+    
     toast.success("Workflow saved successfully");
   };
 
@@ -197,7 +297,9 @@ export function WorkflowBuilder({ onSave, onClose }: WorkflowBuilderProps) {
           <Button variant="ghost" onClick={onClose} className="h-8 w-8 p-0">
             <X className="h-4 w-4" />
           </Button>
-          <h1 className="text-lg font-semibold">New Workflow</h1>
+          <h1 className="text-lg font-semibold">
+            {workflowId ? `Edit: ${workflowName || "Untitled Workflow"}` : "New Workflow"}
+          </h1>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center bg-muted rounded-md">
@@ -279,8 +381,14 @@ export function WorkflowBuilder({ onSave, onClose }: WorkflowBuilderProps) {
             style={{ width: '100%', height: '100%' }}
             minZoom={0.5}
             maxZoom={2}
+            defaultEdgeOptions={{
+              type: 'smoothstep',
+              animated: true,
+            }}
+            snapToGrid={true}
+            snapGrid={[15, 15]}
           >
-            <Background />
+            <Background gap={15} />
             <Controls />
             <MiniMap />
             <Panel position="top-center">
@@ -290,29 +398,6 @@ export function WorkflowBuilder({ onSave, onClose }: WorkflowBuilderProps) {
             </Panel>
           </ReactFlow>
         </div>
-
-        {/* Right Sidebar - Configuration (shown when a node is selected) */}
-        {selectedNode && (
-          <div className="w-72 border-l overflow-auto bg-background/95 backdrop-blur-sm">
-            <div className="p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="font-medium">Element Settings</h2>
-                <Button variant="ghost" size="sm" onClick={() => setSelectedNode(null)}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Configure your selected element here.
-                </p>
-                {/* Placeholder for node configuration form */}
-                <div className="space-y-4">
-                  <p className="text-sm">Settings would appear here based on the selected node type.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Workflow Settings Sheet */}
         <Sheet open={showSettings} onOpenChange={setShowSettings}>
@@ -325,38 +410,35 @@ export function WorkflowBuilder({ onSave, onClose }: WorkflowBuilderProps) {
             </SheetHeader>
             <div className="mt-6 space-y-6">
               <div className="space-y-2">
-                <h3 className="text-sm font-medium">Workflow Name</h3>
-                <input
-                  type="text"
+                <Label htmlFor="workflow-name">Workflow Name</Label>
+                <Input
+                  id="workflow-name"
                   placeholder="Enter workflow name"
-                  className="w-full border rounded-md px-3 py-2"
+                  value={workflowName}
+                  onChange={(e) => setWorkflowName(e.target.value)}
                 />
               </div>
               
               <div className="space-y-2">
-                <h3 className="text-sm font-medium">Status</h3>
-                <select className="w-full border rounded-md px-3 py-2">
-                  <option>Draft</option>
-                  <option>Active</option>
-                  <option>Paused</option>
-                </select>
+                <Label htmlFor="status">Status</Label>
+                <Select value={workflowStatus} onValueChange={setWorkflowStatus}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Run only once per contact</span>
-                <div className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" value="" className="sr-only peer" />
+                <Label htmlFor="run-once">Run only once per contact</Label>
+                <div className="relative inline-flex items-center">
+                  <input type="checkbox" id="run-once" className="sr-only peer" />
                   <div className="w-11 h-6 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-muted after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium">Segment filter for entry</h3>
-                <select className="w-full border rounded-md px-3 py-2">
-                  <option>All Contacts</option>
-                  <option>New Subscribers</option>
-                  <option>Custom Segment</option>
-                </select>
               </div>
             </div>
           </SheetContent>

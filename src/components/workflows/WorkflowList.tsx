@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { 
   Calendar, 
   Copy, 
@@ -10,7 +9,8 @@ import {
   Play, 
   Trash, 
   Users, 
-  Zap 
+  Zap,
+  Settings
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +33,17 @@ import {
   Card,
   CardContent,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 interface Workflow {
   id: string;
@@ -50,10 +61,21 @@ interface WorkflowListProps {
   onDelete: (id: string) => void;
   onToggleStatus: (id: string) => void;
   onDuplicate: (id: string) => void;
-  onEdit: () => void;
+  onEdit: (id: string) => void;
+  onOpenSettings: (id: string) => void;
 }
 
-export function WorkflowList({ workflows, onDelete, onToggleStatus, onDuplicate, onEdit }: WorkflowListProps) {
+export function WorkflowList({ 
+  workflows, 
+  onDelete, 
+  onToggleStatus, 
+  onDuplicate, 
+  onEdit,
+  onOpenSettings
+}: WorkflowListProps) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [workflowToDelete, setWorkflowToDelete] = useState<string | null>(null);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active": return "bg-green-500/20 text-green-700 dark:text-green-500";
@@ -80,6 +102,19 @@ export function WorkflowList({ workflows, onDelete, onToggleStatus, onDuplicate,
     }
   };
 
+  const handleDeleteClick = (id: string) => {
+    setWorkflowToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (workflowToDelete) {
+      onDelete(workflowToDelete);
+      setWorkflowToDelete(null);
+    }
+    setDeleteDialogOpen(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="overflow-x-auto rounded-md border">
@@ -97,7 +132,7 @@ export function WorkflowList({ workflows, onDelete, onToggleStatus, onDuplicate,
           </TableHeader>
           <TableBody>
             {workflows.map((workflow) => (
-              <TableRow key={workflow.id}>
+              <TableRow key={workflow.id} className="cursor-pointer hover:bg-muted/50" onClick={() => onEdit(workflow.id)}>
                 <TableCell className="font-medium">
                   {workflow.name}
                 </TableCell>
@@ -130,7 +165,7 @@ export function WorkflowList({ workflows, onDelete, onToggleStatus, onDuplicate,
                     ))}
                   </div>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
@@ -138,8 +173,12 @@ export function WorkflowList({ workflows, onDelete, onToggleStatus, onDuplicate,
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onEdit()}>
-                        Edit
+                      <DropdownMenuItem onClick={() => onEdit(workflow.id)}>
+                        Edit Workflow
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onOpenSettings(workflow.id)}>
+                        <Settings className="h-4 w-4 mr-2" />
+                        Settings
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onDuplicate(workflow.id)}>
                         <Copy className="h-4 w-4 mr-2" />
@@ -159,7 +198,7 @@ export function WorkflowList({ workflows, onDelete, onToggleStatus, onDuplicate,
                         )}
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => onDelete(workflow.id)}
+                        onClick={() => handleDeleteClick(workflow.id)}
                         className="text-destructive focus:text-destructive"
                       >
                         <Trash className="h-4 w-4 mr-2" />
@@ -221,6 +260,23 @@ export function WorkflowList({ workflows, onDelete, onToggleStatus, onDuplicate,
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the workflow and all of its data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
